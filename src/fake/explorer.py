@@ -21,8 +21,9 @@ def get_all() -> list[Explorer]:
 
 
 def get_one(name: str) -> Explorer | None:
+    name = name.lower()
     for _explorer in _explorers:
-        if _explorer.name in name or name in _explorer.name:
+        if _explorer.name.lower() in name or name in _explorer.name.lower():
             return _explorer
     return None
 

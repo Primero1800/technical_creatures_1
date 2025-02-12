@@ -1,32 +1,33 @@
 from fastapi import APIRouter
-from src.model.explorer import Explorer
-import src.fake.explorer as service
+from src.model.creature import Creature
+import src.fake.creature as service
 
-router = APIRouter(prefix='/explorer')
+
+router = APIRouter(prefix='/creature')
 
 
 @router.get("/")
-def get_all() -> list[Explorer]:
+def get_all() -> list[Creature]:
     return service.get_all()
 
 
 @router.get("/{name}")
-def get_one(name) -> Explorer | None:
+def get_one(name) -> Creature | None:
     return service.get_one(name)
 
 
 @router.post("/")
-def create(explorer: Explorer) -> Explorer:
+def create(explorer: Creature) -> Creature:
     return service.create(explorer)
 
 
 @router.patch("/")
-def modify(explorer: Explorer) -> Explorer:
+def modify(explorer: Creature) -> Creature:
     return service.modify(explorer)
 
 
 @router.put("/")
-def replace(explorer: Explorer) -> Explorer:
+def replace(explorer: Creature) -> Creature:
     return service.replace(explorer)
 
 
