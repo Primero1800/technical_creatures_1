@@ -37,6 +37,18 @@ _creatures = [
         country="RU",
         area="the ukraine",
         aka="Morda Blackassed"),
+    Creature(
+        name="Kolobok",
+        aka="Rumyanyi back",
+        country="RU",
+        area="Villages, Woods",
+        description="Had gone from Granddad, grandma, bear, wolf"),
+    Creature(
+        name="Kikimora",
+        description="Lives in swamps, very hair and dirty",
+        country="RU",
+        area="Swamps",
+        aka="Kikimora Bolotnaya"),
 ]
 
 
