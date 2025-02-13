@@ -1,5 +1,6 @@
 from src.model.creature import Creature
-import src.fake.creature as data
+# import src.fake.creature as data
+import src.data.creature as data
 
 
 def get_all() -> list[Creature]:
@@ -14,13 +15,13 @@ def create(creature: Creature) -> Creature:
     return data.create(creature)
 
 
-def replace(id, creature: Creature) -> Creature:
-    return data.replace(id, creature)
+def replace(creature: Creature) -> Creature:
+    return data.replace(creature)
 
 
-def modify(id, creature: Creature) -> Creature:
-    return data.modify(id, creature)
+def modify(creature: Creature) -> Creature:
+    return data.modify(creature)
 
 
-def delete(id, creature: Creature) -> bool:
-    return data.delete(id)
+def delete(creature: Creature) -> bool:
+    return data.delete(creature)
