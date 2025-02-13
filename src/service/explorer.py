@@ -7,7 +7,7 @@ def get_all() -> list[Explorer]:
 
 
 def get_one(name: str) -> Explorer | None:
-    return data.get(name)
+    return data.get_one(name)
 
 
 def create(explorer: Explorer) -> Explorer:

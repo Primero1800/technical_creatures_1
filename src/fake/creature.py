@@ -59,7 +59,7 @@ def get_all() -> list[Creature]:
 
 def get_one(name: str) -> Creature | None:
     """Возврат одного существа"""
-    name = name.lower()
+    name = str(name).lower()
     for _creature in _creatures:
         if _creature.name.lower() in name or name in _creature.name.lower():
             return _creature
