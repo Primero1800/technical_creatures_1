@@ -9,10 +9,10 @@ load_dotenv()
 def get_db_connection():
     return '{}://{}:{}@{}:{}/{}'.format(
         os.getenv('DB_ENGINE'),
-        os.getenv('DB_HOST'),
-        os.getenv('DB_PORT'),
         os.getenv('DB_USER'),
         os.getenv('DB_PASSWORD'),
+        os.getenv('DB_HOST'),
+        os.getenv('DB_PORT'),
         os.getenv('DB_NAME')
     )
 
@@ -36,6 +36,7 @@ def init_creature():
                 aka VARCHAR(255)
             )
         """))
+        session.commit()
 
 
 def init_explorer():
@@ -47,6 +48,7 @@ def init_explorer():
                 description VARCHAR(255)
             )
         """))
+        session.commit()
 
 
 init_creature()

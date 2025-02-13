@@ -16,15 +16,15 @@ def get_one(name: str) -> Creature:
     with Session() as session:
         query = "select * from creature where name=:name"
         params = {"name": name}
-        row = session.execute(text(query), params).scalar_one_or_none()
+        row = session.execute(text(query), params).fetchone()
     return row_to_model(row)
 
 
-def get_all(name: str) -> list[Creature]:
+def get_all() -> list[Creature]:
     with Session() as session:
         query = "select * from creature"
         rows = session.execute(text(query)).fetchall()
-    return [row_to_model(row[0]) for row in rows]
+    return [row_to_model(row) for row in rows]
 
 
 def create(creature: Creature) -> Creature:
@@ -35,7 +35,9 @@ def create(creature: Creature) -> Creature:
         """
         params = model_to_dict(creature)
         session.execute(text(query), params)
+        session.commit()
     return get_one(creature.name)
+    # return None
 
 
 def modify(creature: Creature):
@@ -52,6 +54,7 @@ def modify(creature: Creature):
         params = model_to_dict(creature)
         params["name_orig"] = creature.name
         session.execute(text(query), params)
+        session.commit()
     return get_one(creature.name)
 
 

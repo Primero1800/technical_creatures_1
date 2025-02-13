@@ -18,18 +18,18 @@ def get_one(name) -> Creature | None:
 
 
 @router.post("/")
-def create(explorer: Creature) -> Creature:
-    return service.create(explorer)
+def create(creature: Creature) -> Creature:
+    return service.create(creature)
 
 
 @router.patch("/")
-def modify(explorer: Creature) -> Creature:
-    return service.modify(explorer)
+def modify(creature: Creature) -> Creature:
+    return service.modify(creature)
 
 
 @router.put("/")
-def replace(explorer: Creature) -> Creature:
-    return service.replace(explorer)
+def replace(creature: Creature) -> Creature:
+    return service.replace(creature)
 
 
 @router.delete("/{name}")

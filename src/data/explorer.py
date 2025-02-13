@@ -16,7 +16,7 @@ def get_one(name: str) -> Explorer:
     with Session() as session:
         query = "select * from explorer where name=:name"
         params = {"name": name}
-        row = session.execute(text(query), params).scalar_one_or_none()
+        row = session.execute(text(query), params).fetchone()
     return row_to_model(row)
 
 
@@ -24,7 +24,7 @@ def get_all(name: str) -> list[Explorer]:
     with Session() as session:
         query = "select * from explorer"
         rows = session.execute(text(query)).fetchall()
-    return [row_to_model(row[0]) for row in rows]
+    return [row_to_model(row) for row in rows]
 
 
 def create(explorer: Explorer) -> Explorer:
