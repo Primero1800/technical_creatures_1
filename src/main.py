@@ -1,6 +1,7 @@
 from fastapi import FastAPI
+from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
-from  opentelemetry.instrumentation.requests import RequestsInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 from src.web import explorer, creature
 
@@ -14,7 +15,9 @@ app = FastAPI()
 app.include_router(explorer.router)
 app.include_router(creature.router)
 
-FastAPIInstrumentor(app=app)
+# FastAPIInstrumentor(app=app)
+FastAPIInstrumentor.instrument_app(app)
+tracer = trace.get_tracer(__name__)
 
 
 @app.get('/')
@@ -26,6 +29,10 @@ def top():
 def echo(thing):
     return ' '.join([thing for _ in range(3)])
 
+
+@app.get("/test")
+def test_endpoint():
+    return {"message": "Hello from test!"}
 
 
 if __name__ == "__main__":
