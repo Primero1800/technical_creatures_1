@@ -27,26 +27,41 @@ def get_all(name: str) -> list[Creature]:
     return [row_to_model(row[0]) for row in rows]
 
 
-def create(creature: Creature):
+def create(creature: Creature) -> Creature:
     with Session() as session:
         query = """
             insert into creature values
             (:name, :description, :country, :area, :aka)
         """
         params = model_to_dict(creature)
-        result = session.execute(text(query), params).scalar_one_or_none()
+        session.execute(text(query), params)
+    return get_one(creature.name)
 
 
 def modify(creature: Creature):
-    return creature
+    with Session() as session:
+        query = """
+            update creature
+            set country=:country,
+            name=:name,
+            description=:description,
+            area=:area,
+            aka=:aka
+            where name=:name_orig
+        """
+        params = model_to_dict(creature)
+        params["name_orig"] = creature.name
+        session.execute(text(query), params)
+    return get_one(creature.name)
 
 
 def replace(creature: Creature):
     return creature
 
 
-def delete(creature: Creature):
+def delete(creature: Creature) -> bool:
     with Session() as session:
         query = "delete from creature where name = :name"
         params = {"name": creature.name}
-        session.execute(text(query), params)
+        result = session.execute(text(query), params)
+        return bool(result)
