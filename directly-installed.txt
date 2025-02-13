@@ -8,3 +8,6 @@ opentelemetry-sdk
 Opentelemetry-exporter-otlp-proto-http
 opentelemetry-instrumentation-requests
 opentelemetry-instrumentation-fastapi
+
+postgres
+sqlalchemy
