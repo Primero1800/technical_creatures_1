@@ -23,14 +23,3 @@ def init_otel():
 
     trace.set_tracer_provider(provider)
     tracer = trace.get_tracer('1_creatures.tracer')
-
-
-def get_db_connection():
-    return '{}://{}:{}@{}:{}/{}'.format(
-        os.getenv('DB_ENGINE'),
-        os.getenv('DB_HOST'),
-        os.getenv('DB_PORT'),
-        os.getenv('DB_USER'),
-        os.getenv('DB_PASSWORD'),
-        os.getenv('DB_NAME')
-    )
