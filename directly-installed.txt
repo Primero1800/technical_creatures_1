@@ -2,3 +2,7 @@ fastapi
 uvicorn
 httpie
 pytest
+opentelemetry-distro
+
+opentelemetry-instrumentation-fastapi
+opentelemetry-exporter-otlp-proto-grpc
