@@ -13,6 +13,7 @@ def model_to_dict(explorer: Explorer) -> dict:
 
 
 def get_one(name: str) -> Explorer:
+
     with Session() as session:
         query = "select * from explorer where name=:name"
         params = {"name": name}
@@ -20,7 +21,7 @@ def get_one(name: str) -> Explorer:
     return row_to_model(row)
 
 
-def get_all(name: str) -> list[Explorer]:
+def get_all() -> list[Explorer]:
     with Session() as session:
         query = "select * from explorer"
         rows = session.execute(text(query)).fetchall()
@@ -28,6 +29,8 @@ def get_all(name: str) -> list[Explorer]:
 
 
 def create(explorer: Explorer) -> Explorer:
+    # sqlalchemy.exc.IntegrityError - duplicate key value violates unique constraint "explorer_pkey"
+
     with Session() as session:
         query = """
             insert into explorer values
@@ -35,6 +38,7 @@ def create(explorer: Explorer) -> Explorer:
         """
         params = model_to_dict(explorer)
         session.execute(text(query), params)
+        session.commit()
     return get_one(explorer.name)
 
 
@@ -50,6 +54,7 @@ def modify(explorer: Explorer):
         params = model_to_dict(explorer)
         params["name_orig"] = explorer.name
         session.execute(text(query), params)
+        session.commit()
     return get_one(explorer.name)
 
 
@@ -62,4 +67,5 @@ def delete(explorer: Explorer) -> bool:
         query = "delete from explorer where name = :name"
         params = {"name": explorer.name}
         result = session.execute(text(query), params)
+        session.commit()
         return bool(result)

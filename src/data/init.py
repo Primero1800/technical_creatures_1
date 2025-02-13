@@ -29,7 +29,7 @@ def init_creature():
     with Session() as session:
         session.execute(text("""
             CREATE TABLE IF NOT EXISTS creature (
-                name VARCHAR(255),
+                name VARCHAR(255) primary key,
                 description VARCHAR(255),
                 country VARCHAR(255),
                 area VARCHAR(255),
@@ -43,7 +43,7 @@ def init_explorer():
     with Session() as session:
         session.execute(text("""
             CREATE TABLE IF NOT EXISTS explorer (
-                name VARCHAR(255),
+                name VARCHAR(255) primary key,
                 country VARCHAR(255),
                 description VARCHAR(255)
             )
