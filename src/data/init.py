@@ -25,7 +25,7 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
-def init():
+def init_creature():
     with Session() as session:
         session.execute(text("""
             CREATE TABLE IF NOT EXISTS creature (
@@ -38,4 +38,16 @@ def init():
         """))
 
 
-init()
+def init_explorer():
+    with Session() as session:
+        session.execute(text("""
+            CREATE TABLE IF NOT EXISTS explorer (
+                name VARCHAR(255),
+                country VARCHAR(255),
+                description VARCHAR(255)
+            )
+        """))
+
+
+init_creature()
+init_explorer()

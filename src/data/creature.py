@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from src.data.init import Session
 from src.model.creature import Creature
 
