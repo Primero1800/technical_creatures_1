@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+#  rabbitmq:
+#    image: rabbitmq:management
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    restart: always
+#    environment:
+#      RABBITMQ_DEFAULT_USER: guest
+#      RABBITMQ_DEFAULT_PASS: guest
+
+  webapp:
+    restart: always
+    build:
+      context: ./
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: host.docker.internal
+#    volumes:
+#      - ./catloader/db:/app/catloader/db
+    command: [ "python3", "./catloader/manage.py", "runserver", "0.0.0.0:8000" ]
+
+  celery-worker1:
+    restart: always
+    build:
+      context: ./
+    volumes:
+      - ./catloader/cats:/app/catloader/cats
+    environment:
+      DB_HOST: host.docker.internal
+    command: [ "celery", "--workdir=./catloader", "-A", "catloader", "worker", "-l", "INFO"]
+
+  celery-worker2:
+    restart: always
+    build:
+      context: ./
+    volumes:
+      - ./catloader/cats:/app/catloader/cats
+    environment:
+      DB_HOST: host.docker.internal
+    command: [ "celery", "--workdir=./catloader", "-A", "catloader", "worker", "-l", "INFO" ]
+
+  celery-beat:
+    restart: always
+    build:
+      context: ./
+    volumes:
+      - ./catloader/cats:/app/catloader/cats
+      #- ./catloader/db:/app/catloader/db
+    environment:
+      DB_HOST: host.docker.internal
+#    command: [ "celery",  "--workdir=./catloader", "-A",  "catloader",  "beat", "-l", "INFO", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+    command: [ "celery",  "--workdir=./catloader", "-A",  "catloader",  "beat", "-l", "INFO"]
+
+  flower:
+    restart: always
+    build:
+      context: ./
+    ports:
+      - "5555:5555"
+    command: [ "celery", "--workdir=./catloader", "-A", "catloader", "flower", "--broker=redis://redis:6379/1" ]
+#    command: [ "celery", "--workdir=./catloader", "-A", "catloader", "flower" ]
+
