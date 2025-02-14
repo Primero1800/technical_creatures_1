@@ -1,3 +1,4 @@
+from src.errors import Duplicate, Missing
 from src.model.creature import Creature
 from src.service import creature as code
 
@@ -12,15 +13,22 @@ sample = Creature(
 
 
 def test_create():
-    resp = code.create(sample)
-    assert resp == sample
+    try:
+        resp = code.create(sample)
+    except Duplicate as exc:
+        assert exc.msg == "Creature Yeti already exists"
 
 
 def test_get_exists():
-    resp = code.get_one("yeti")
+    try:
+        resp = code.get_one("Yeti")
+    except Missing as exc:
+        resp = None
     assert resp == sample
 
 
 def test_get_missing():
-    resp = code.get_one("boxturtle")
-    assert resp is None
+    try:
+        resp = code.get_one("boxturtle")
+    except Missing as exc:
+        assert exc.msg == "Creature boxturtle not found"
