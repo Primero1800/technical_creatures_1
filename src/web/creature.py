@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from starlette import status
 
-from src.model.creature import Creature
+from src.errors import Missing, Duplicate
+from src.model.creature import Creature, CreatureUpdate
 # import src.fake.creature as service
 import src.service.creature as service
 
@@ -18,28 +19,45 @@ def get_all() -> list[Creature]:
 @router.get("/{name}", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.get("/{name}/", status_code=status.HTTP_200_OK)
 def get_one(name) -> Creature | None:
-    return service.get_one(name)
+    try:
+        return service.get_one(name)
+    except Missing as exc:
+        raise HTTPException(status_code=404, detail=exc.msg)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create(creature: Creature) -> Creature:
-    return service.create(creature)
+    try:
+        return service.create(creature)
+    except Duplicate as exc:
+        raise HTTPException(status_code=403, detail=exc.msg)
 
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.patch("/", status_code=status.HTTP_200_OK)
-def modify(creature: Creature) -> Creature:
-    return service.modify(creature)
+def modify(name: str, creature: CreatureUpdate) -> Creature:
+    try:
+        return service.modify(name, creature)
+    except Missing as exc:
+        raise HTTPException(status_code=404, detail=exc.msg)
+    except Exception as exc:
+        raise HTTPException(status_code=403, detail=exc)
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.put("/", status_code=status.HTTP_200_OK)
 def replace(creature: Creature) -> Creature:
-    return service.replace(creature)
+    try:
+        return service.replace(creature)
+    except Missing as exc:
+        raise HTTPException(status_code=404, detail=exc.msg)
 
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
 @router.delete("/{name}/", status_code=status.HTTP_204_NO_CONTENT)
 def delete(name: str):
-    return None
+    try:
+        return service.delete(name)
+    except Missing as exc:
+        raise HTTPException(status_code=404, detail=exc.msg)
