@@ -1,3 +1,4 @@
+from pydantic import ValidationError
 from sqlalchemy import text
 from src.data.init import Session, IntegrityError
 from src.errors import Missing, Duplicate, Validation
@@ -46,8 +47,7 @@ def create(creature: Creature) -> Creature:
     return get_one(creature.name)
 
 
-def modify(name: str, creature: Creature):
-    params = creature.model_dump(exclude_unset=True)
+def modify(name: str, params: dict):
     creature = get_one(name)
     if not params:
         raise Missing(msg=f"Explorer {creature.name}: changes not found")
@@ -55,9 +55,8 @@ def modify(name: str, creature: Creature):
     params = {key:params[key] if key in params else val for key, val in model_to_dict(creature).items()}
     try:
         creature = Creature(**params)
-    except Exception as error:
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', error)
-        raise Validation(msg=error)
+    except ValidationError as exc:
+        raise Validation(msg=exc.errors())
 
     with Session() as session:
         query = """

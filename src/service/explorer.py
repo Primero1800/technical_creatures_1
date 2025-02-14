@@ -18,8 +18,8 @@ def replace(explorer: Explorer) -> Explorer:
     return data.replace(explorer)
 
 
-def modify(name: str, explorer: Explorer) -> Explorer:
-    return data.modify(name, explorer)
+def modify(name: str, params: dict) -> Explorer:
+    return data.modify(name, params)
 
 
 def delete(name: str) -> bool:

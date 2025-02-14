@@ -18,8 +18,8 @@ def replace(creature: Creature) -> Creature:
     return data.replace(creature)
 
 
-def modify(name: str, creature: Creature) -> Creature:
-    return data.modify(name, creature)
+def modify(name: str, params: dict) -> Creature:
+    return data.modify(name, params)
 
 
 def delete(name: str) -> bool:

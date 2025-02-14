@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from starlette import status
 
-from src.errors import Duplicate, Missing
+from src.errors import Duplicate, Missing, Validation
 from src.model.explorer import Explorer, ExplorerUpdate
 import src.service.explorer as service
 
@@ -37,11 +37,11 @@ def create(explorer: Explorer) -> Explorer:
 @router.patch("/", status_code=status.HTTP_200_OK)
 def modify(name: str, explorer: ExplorerUpdate) -> Explorer:
     try:
-        return service.modify(name, explorer)
+        return service.modify(name, explorer.model_dump(exclude_unset=True))
     except (Missing, Duplicate) as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
-    except Exception as exc:
-        raise HTTPException(status_code=403, detail=exc)
+    except Validation as exc:
+        raise HTTPException(status_code=403, detail=exc.msg)
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)

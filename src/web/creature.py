@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from starlette import status
 
-from src.errors import Missing, Duplicate
+from src.errors import Missing, Duplicate, Validation
 from src.model.creature import Creature, CreatureUpdate
 # import src.fake.creature as service
 import src.service.creature as service
@@ -38,11 +38,11 @@ def create(creature: Creature) -> Creature:
 @router.patch("/", status_code=status.HTTP_200_OK)
 def modify(name: str, creature: CreatureUpdate) -> Creature:
     try:
-        return service.modify(name, creature)
+        return service.modify(name, creature.model_dump(exclude_unset=True))
     except (Missing, Duplicate) as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
-    except Exception as exc:
-        raise HTTPException(status_code=403, detail=exc)
+    except Validation as exc:
+        raise HTTPException(status_code=403, detail=exc.msg)
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)
