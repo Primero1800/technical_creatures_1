@@ -1,14 +1,14 @@
 from src.errors import Duplicate, Missing, Validation
-from src.model.creature import Creature
-from src.data import creature as data
+from src.model.explorer import Explorer
+from src.data import explorer as data
 
-from src.test.fixtures.creature import (
+from src.test.fixtures.explorer import (
     sample, sample2, sample_dict, sample_dict_, sample_dict_extended, sample_dict_duplicate,
     sample_dict_bad, sample_dict_not_full, sample_dict_not_full_bad
 )
 
 
-def test_data_creature_create(sample):
+def test_data_explorer_create(sample):
     try:
         resp = data.create(sample)
     except Duplicate as exc:
@@ -16,7 +16,7 @@ def test_data_creature_create(sample):
     assert resp == sample
 
 
-def test_data_creature_create2(sample2):
+def test_data_explorer_create2(sample2):
     try:
         resp = data.create(sample2)
     except Duplicate as exc:
@@ -24,15 +24,15 @@ def test_data_creature_create2(sample2):
     assert resp == sample2
 
 
-def test_data_creature_create_duplicate(sample):
+def test_data_explorer_create_duplicate(sample):
     try:
         resp = data.create(sample)
     except Duplicate as exc:
         resp = exc.msg
-    assert resp == f"Creature {sample.name} already exists"
+    assert resp == f"Explorer {sample.name} already exists"
 
 
-def test_data_creature_get_one(sample):
+def test_data_explorer_get_one(sample):
     try:
         resp = data.get_one(sample.name)
     except Missing as exc:
@@ -40,21 +40,21 @@ def test_data_creature_get_one(sample):
     assert resp == sample
 
 
-def test_data_creature_get_one_missing(sample):
+def test_data_explorer_get_one_missing(sample):
     try:
         resp = data.get_one(sample.name + '_test_preffix')
     except Missing as exc:
         resp = exc.msg
-    assert resp == f"Creature {sample.name + '_test_preffix'} not found"
+    assert resp == f"Explorer {sample.name + '_test_preffix'} not found"
 
 
-def test_data_creature_get_all(sample):
+def test_data_explorer_get_all(sample):
     resp = data.get_all()
     assert resp is not None
     assert type(resp) is list
 
 
-def test_data_creature_modify(sample, sample_dict_):
+def test_data_explorer_modify(sample, sample_dict_):
     try:
         resp = data.modify(sample.name, sample_dict_)
     except Missing as exc:
@@ -63,11 +63,11 @@ def test_data_creature_modify(sample, sample_dict_):
         resp = exc.msg
     except Duplicate as exc:
         resp = exc.msg
-    assert type(resp) is Creature
+    assert type(resp) is Explorer
     assert resp.name == sample.name + '_'
 
 
-def test_data_creature_modify_back(sample, sample_dict):
+def test_data_explorer_modify_back(sample, sample_dict):
     try:
         resp = data.modify(sample.name + '_', sample_dict)
     except Missing as exc:
@@ -79,7 +79,7 @@ def test_data_creature_modify_back(sample, sample_dict):
     assert resp == sample
 
 
-def test_data_creature_modify_bad(sample, sample_dict_bad):
+def test_data_explorer_modify_bad(sample, sample_dict_bad):
     try:
         resp = data.modify(sample.name, sample_dict_bad)
     except Missing as exc:
@@ -91,7 +91,7 @@ def test_data_creature_modify_bad(sample, sample_dict_bad):
     assert resp[0]['type'] == 'string_too_long'
 
 
-def test_data_creature_modify_not_full(sample, sample_dict_not_full):
+def test_data_explorer_modify_not_full(sample, sample_dict_not_full):
     try:
         resp = data.modify(sample.name, sample_dict_not_full)
     except Missing as exc:
@@ -102,11 +102,10 @@ def test_data_creature_modify_not_full(sample, sample_dict_not_full):
         resp = exc.msg
     assert resp.name == sample.name
     assert resp.country == sample.country
-    assert resp.area == sample.area
-    assert resp.aka == sample.aka + '_'
+    assert resp.description == sample.description + '_'
 
 
-def test_data_creature_modify_not_full_bad(sample, sample_dict_not_full_bad):
+def test_data_explorer_modify_not_full_bad(sample, sample_dict_not_full_bad):
     try:
         resp = data.modify(sample.name, sample_dict_not_full_bad)
     except Missing as exc:
@@ -118,7 +117,7 @@ def test_data_creature_modify_not_full_bad(sample, sample_dict_not_full_bad):
     assert resp[0]['type'] == 'string_too_long'
 
 
-def test_data_creature_modify_extended(sample, sample_dict_extended):
+def test_data_explorer_modify_extended(sample, sample_dict_extended):
     try:
         resp = data.modify(sample.name, sample_dict_extended)
     except Missing as exc:
@@ -130,7 +129,7 @@ def test_data_creature_modify_extended(sample, sample_dict_extended):
     assert resp == sample
 
 
-def test_data_creature_modify_duplicate(sample, sample_dict_duplicate):
+def test_data_explorer_modify_duplicate(sample, sample_dict_duplicate):
     try:
         resp = data.modify(sample.name, sample_dict_duplicate)
     except Missing as exc:
@@ -139,10 +138,10 @@ def test_data_creature_modify_duplicate(sample, sample_dict_duplicate):
         resp = exc.msg
     except Duplicate as exc:
         resp = exc.msg
-    assert resp == f"Creature {sample_dict_duplicate['name']} already exists"
+    assert resp == f"Explorer {sample_dict_duplicate['name']} already exists"
 
 
-def test_data_creature_put_back(sample):
+def test_data_explorer_put_back(sample):
     try:
         resp = data.replace(sample)
     except Missing as exc:
@@ -150,7 +149,7 @@ def test_data_creature_put_back(sample):
     assert resp == sample
 
 
-def test_data_creature_delete(sample):
+def test_data_explorer_delete(sample):
     try:
         resp = data.delete(sample.name)
     except Missing as exc:
@@ -158,7 +157,7 @@ def test_data_creature_delete(sample):
     assert resp is True
 
 
-def test_data_creature_delete2(sample2):
+def test_data_explorer_delete2(sample2):
     try:
         resp = data.delete(sample2.name)
     except Missing as exc:
@@ -166,17 +165,17 @@ def test_data_creature_delete2(sample2):
     assert resp is True
 
 
-def test_data_creature_delete_duplicate(sample):
+def test_data_explorer_delete_duplicate(sample):
     try:
         resp = data.delete(sample.name)
     except Missing as exc:
         resp = exc.msg
-    assert resp == f"Creature {sample.name} not found"
+    assert resp == f"Explorer {sample.name} not found"
 
 
-def test_data_creature_put_missing(sample):
+def test_data_explorer_put_missing(sample):
     try:
         resp = data.replace(sample)
     except Missing as exc:
         resp = exc.msg
-    assert resp == f"Creature {sample.name} not found"
+    assert resp == f"Explorer {sample.name} not found"
