@@ -39,7 +39,7 @@ def create(creature: Creature) -> Creature:
 def modify(name: str, creature: CreatureUpdate) -> Creature:
     try:
         return service.modify(name, creature)
-    except Missing as exc:
+    except (Missing, Duplicate) as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
     except Exception as exc:
         raise HTTPException(status_code=403, detail=exc)

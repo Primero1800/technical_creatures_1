@@ -70,7 +70,10 @@ def modify(name: str, creature: Creature):
             where name=:name_orig
         """
         params["name_orig"] = name
-        result = session.execute(text(query), params)
+        try:
+            result = session.execute(text(query), params)
+        except IntegrityError:
+            raise Duplicate(msg=f"Explorer {creature.name} already exists")
         if result.rowcount > 0:
             session.commit()
             return get_one(params['name'])

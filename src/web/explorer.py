@@ -38,7 +38,7 @@ def create(explorer: Explorer) -> Explorer:
 def modify(name: str, explorer: ExplorerUpdate) -> Explorer:
     try:
         return service.modify(name, explorer)
-    except Missing as exc:
+    except (Missing, Duplicate) as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
     except Exception as exc:
         raise HTTPException(status_code=403, detail=exc)

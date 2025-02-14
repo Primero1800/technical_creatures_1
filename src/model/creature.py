@@ -1,14 +1,14 @@
-from typing import Optional
+from typing import Optional, Annotated
 
 from pydantic import BaseModel, Field
 
 
 class Creature(BaseModel):
-    name: str
-    country: str
-    area: str
-    description: str
-    aka: str
+    name: Annotated[str, Field(max_length=75, min_length=2)]
+    country: Annotated[str, Field(max_length=2, default='*')]
+    area: Annotated[str, Field(max_length=75, default='')]
+    description: Annotated[Optional[str], Field(max_length=255)]
+    aka: Annotated[Optional[str], Field(max_length=75)]
 
 
 class CreatureUpdate(BaseModel):
