@@ -1,5 +1,3 @@
-from fastapi.params import Body
-from pydantic import ValidationError
 from sqlalchemy import text
 from src.data.init import Session, IntegrityError
 from src.errors import Missing, Duplicate, Validation
@@ -16,7 +14,6 @@ def model_to_dict(explorer: Explorer) -> dict:
 
 
 def get_one(name: str) -> Explorer:
-
     with Session() as session:
         query = "select * from explorer where name=:name"
         params = {"name": name}

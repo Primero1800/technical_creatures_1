@@ -1,5 +1,6 @@
 from sqlalchemy import text
-from src.data.init import Session
+from src.data.init import Session, IntegrityError
+from src.errors import Missing, Duplicate, Validation
 from src.model.creature import Creature
 
 
@@ -17,7 +18,10 @@ def get_one(name: str) -> Creature:
         query = "select * from creature where name=:name"
         params = {"name": name}
         row = session.execute(text(query), params).fetchone()
-    return row_to_model(row)
+        if row:
+            return row_to_model(row)
+        else:
+            raise Missing(msg=f"Creature {name} not found")
 
 
 def get_all() -> list[Creature]:
@@ -34,13 +38,47 @@ def create(creature: Creature) -> Creature:
             (:name, :description, :country, :area, :aka)
         """
         params = model_to_dict(creature)
-        session.execute(text(query), params)
-        session.commit()
+        try:
+            session.execute(text(query), params)
+            session.commit()
+        except IntegrityError:
+            raise Duplicate(msg=f"Creature{creature.name} already exists")
     return get_one(creature.name)
-    # return None
 
 
-def modify(creature: Creature):
+def modify(name: str, creature: Creature):
+    params = creature.model_dump(exclude_unset=True)
+    creature = get_one(name)
+    if not params:
+        raise Missing(msg=f"Explorer {creature.name}: changes not found")
+
+    params = {key:params[key] if key in params else val for key, val in model_to_dict(creature).items()}
+    try:
+        creature = Creature(**params)
+    except Exception as error:
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', error)
+        raise Validation(msg=error)
+
+    with Session() as session:
+        query = """
+            update creature
+            set country=:country,
+            name=:name,
+            description=:description,
+            area=:area,
+            aka=:aka
+            where name=:name_orig
+        """
+        params["name_orig"] = name
+        result = session.execute(text(query), params)
+        if result.rowcount > 0:
+            session.commit()
+            return get_one(params['name'])
+        else:
+            raise Missing(msg=f"Creature {params['name']} not found")
+
+
+def replace(creature: Creature):
     with Session() as session:
         query = """
             update creature
@@ -53,18 +91,21 @@ def modify(creature: Creature):
         """
         params = model_to_dict(creature)
         params["name_orig"] = creature.name
-        session.execute(text(query), params)
-        session.commit()
-    return get_one(creature.name)
+        result = session.execute(text(query), params)
+        if result.rowcount > 0:
+            session.commit()
+            return get_one(creature.name)
+        else:
+            raise Missing(msg=f"Creature {creature.name} not found")
 
 
-def replace(creature: Creature):
-    return creature
-
-
-def delete(creature: Creature) -> bool:
+def delete(name: str) -> bool:
     with Session() as session:
         query = "delete from creature where name = :name"
-        params = {"name": creature.name}
+        params = {"name": name}
         result = session.execute(text(query), params)
-        return bool(result)
+        session.commit()
+        if result.rowcount > 0:
+            return True
+        else:
+            raise Missing(msg=f"Creature {name} not found")
