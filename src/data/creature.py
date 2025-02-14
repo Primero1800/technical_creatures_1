@@ -72,7 +72,7 @@ def modify(name: str, params: dict):
         try:
             result = session.execute(text(query), params)
         except IntegrityError:
-            raise Duplicate(msg=f"Explorer {creature.name} already exists")
+            raise Duplicate(msg=f"Creature {creature.name} already exists")
         if result.rowcount > 0:
             session.commit()
             return get_one(params['name'])
