@@ -1,7 +1,8 @@
 from fastapi.params import Body
+from pydantic import ValidationError
 from sqlalchemy import text
 from src.data.init import Session, IntegrityError
-from src.errors import Missing, Duplicate
+from src.errors import Missing, Duplicate, Validation
 from src.model.explorer import Explorer
 
 
@@ -49,13 +50,18 @@ def create(explorer: Explorer) -> Explorer:
     return get_one(explorer.name)
 
 
-def modify(name: str, kwargs: dict):
+def modify(name: str, explorer: Explorer):
+    params = explorer.model_dump(exclude_unset=True)
     explorer = get_one(name)
-    if not kwargs:
+    if not params:
         raise Missing(msg=f"Explorer {explorer.name}: changes not found")
 
-    explorer_kwargs = model_to_dict(explorer)
-    kwargs = {key:kwargs[key] if key in kwargs else val for key, val in explorer_kwargs.items()}
+    params = {key:params[key] if key in params else val for key, val in model_to_dict(explorer).items()}
+    try:
+        explorer = Explorer(**params)
+    except Exception as error:
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', error)
+        raise Validation(msg=error)
 
     with Session() as session:
         query = """
@@ -65,15 +71,13 @@ def modify(name: str, kwargs: dict):
             description=:description
             where name=:name_orig
         """
-        params = kwargs
         params["name_orig"] = name
         result = session.execute(text(query), params)
-        print("ROWS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", result.rowcount)
         if result.rowcount > 0:
             session.commit()
-            return get_one(kwargs['name'])
+            return get_one(params['name'])
         else:
-            raise Missing(msg=f"Explorer {kwargs['name']} not found")
+            raise Missing(msg=f"Explorer {params['name']} not found")
 
 
 def replace(explorer: Explorer):
