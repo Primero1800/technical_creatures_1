@@ -1,15 +1,8 @@
 from src.errors import Duplicate, Missing
-from src.model.creature import Creature
 from src.service import creature as code
+from src.mock.creature import _creatures as sample_creatures
 
-
-sample = Creature(
-    name="Yeti",
-    country="CN",
-    area="Himalayas",
-    description="Hirsute Himalayan",
-    aka="Abominable Snowman",
-)
+sample = sample_creatures[0]
 
 
 def test_create():
