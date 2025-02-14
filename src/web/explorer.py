@@ -1,7 +1,8 @@
 from fastapi import APIRouter
+from fastapi.params import Body
 from starlette import status
 
-from src.model.explorer import Explorer
+from src.model.explorer import Explorer, ExplorerUpdate
 import src.service.explorer as service
 
 router = APIRouter(prefix='/explorer')
@@ -27,8 +28,8 @@ def create(explorer: Explorer) -> Explorer:
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.patch("/", status_code=status.HTTP_200_OK)
-def modify(name: str, explorer: Explorer) -> Explorer:
-    return service.modify(name, explorer)
+def modify(name: str, explorer: ExplorerUpdate) -> Explorer:
+    return service.modify(name, explorer.model_dump(exclude_unset=True))
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)

@@ -1,3 +1,4 @@
+from fastapi.params import Body
 from sqlalchemy import text
 from src.data.init import Session, IntegrityError
 from src.errors import Missing, Duplicate
@@ -48,9 +49,14 @@ def create(explorer: Explorer) -> Explorer:
     return get_one(explorer.name)
 
 
-def modify(name: str, explorer: Explorer):
-    if not (name and explorer):
-        raise Missing(msg=f"Explorer not found")
+def modify(name: str, kwargs: dict):
+    explorer = get_one(name)
+    if not kwargs:
+        raise Missing(msg=f"Explorer {explorer.name}: changes not found")
+
+    explorer_kwargs = model_to_dict(explorer)
+    kwargs = {key:kwargs[key] if key in kwargs else val for key, val in explorer_kwargs.items()}
+
     with Session() as session:
         query = """
             update explorer
@@ -59,15 +65,15 @@ def modify(name: str, explorer: Explorer):
             description=:description
             where name=:name_orig
         """
-        params = model_to_dict(explorer)
-        params["name_orig"] = explorer.name
-        result= session.execute(text(query), params)
+        params = kwargs
+        params["name_orig"] = name
+        result = session.execute(text(query), params)
         print("ROWS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", result.rowcount)
         if result.rowcount > 0:
             session.commit()
-            return get_one(explorer.name)
+            return get_one(kwargs['name'])
         else:
-            raise Missing(msg=f"Explorer {explorer.name} not found")
+            raise Missing(msg=f"Explorer {kwargs['name']} not found")
 
 
 def replace(explorer: Explorer):
