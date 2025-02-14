@@ -32,15 +32,14 @@ def create(explorer: Explorer) -> Explorer:
         raise HTTPException(status_code=400, detail=exc.msg)
 
 
-
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.patch("/", status_code=status.HTTP_200_OK)
 def modify(name: str, explorer: ExplorerUpdate) -> Explorer:
     try:
         return service.modify(name, explorer.model_dump(exclude_unset=True))
-    except (Missing, Duplicate) as exc:
+    except Missing as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
-    except Validation as exc:
+    except (Validation, Duplicate) as exc:
         raise HTTPException(status_code=400, detail=exc.msg)
 
 

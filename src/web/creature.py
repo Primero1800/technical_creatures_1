@@ -3,7 +3,6 @@ from starlette import status
 
 from src.errors import Missing, Duplicate, Validation
 from src.model.creature import Creature, CreatureUpdate
-# import src.fake.creature as service
 import src.service.creature as service
 
 
@@ -39,9 +38,9 @@ def create(creature: Creature) -> Creature:
 def modify(name: str, creature: CreatureUpdate) -> Creature:
     try:
         return service.modify(name, creature.model_dump(exclude_unset=True))
-    except (Missing, Duplicate) as exc:
+    except Missing as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
-    except Validation as exc:
+    except (Validation, Duplicate) as exc:
         raise HTTPException(status_code=400, detail=exc.msg)
 
 
