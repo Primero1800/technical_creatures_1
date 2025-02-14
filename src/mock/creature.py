@@ -10,7 +10,7 @@ _creatures = [
     Creature(
         name="Bigfoot",
         description="Yeti's Cousin Eddie",
-        country="Yeti's Cousin Eddie",
+        country="US",
         area="*",
         aka="Sasquatch"),
     Creature(
@@ -51,6 +51,22 @@ _creatures = [
         aka="Kikimora Bolotnaya"),
 ]
 
+_sample_creatures = [
+    Creature(
+        name="test_creature_name",
+        country="*",
+        area="test_creature_areas",
+        description="test_creature_description",
+        aka="test_creature_aka",
+    ),
+    Creature(
+        name="test_creature_name2",
+        country="*",
+        area="test_creature_areas",
+        description="test_creature_description",
+        aka="test_creature_aka",
+    )
+]
 
 def get_all() -> list[Creature]:
     """Возврат всех существ"""

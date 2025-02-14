@@ -15,6 +15,17 @@ _explorers = [
              description="Best friend of hears and other animals"),
 ]
 
+_sample_explorers = [
+    Explorer(
+        name="test_explorer_name",
+        country="*",
+        description="test_explorer_description"),
+    Explorer(
+        name="test_explorer_name2",
+        country="*",
+        description="test_explorer_description"),
+]
+
 
 def get_all() -> list[Explorer]:
     return _explorers
