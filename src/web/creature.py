@@ -31,7 +31,7 @@ def create(creature: Creature) -> Creature:
     try:
         return service.create(creature)
     except Duplicate as exc:
-        raise HTTPException(status_code=403, detail=exc.msg)
+        raise HTTPException(status_code=400, detail=exc.msg)
 
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
@@ -42,7 +42,7 @@ def modify(name: str, creature: CreatureUpdate) -> Creature:
     except (Missing, Duplicate) as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
     except Validation as exc:
-        raise HTTPException(status_code=403, detail=exc.msg)
+        raise HTTPException(status_code=400, detail=exc.msg)
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)

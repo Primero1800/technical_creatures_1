@@ -29,7 +29,7 @@ def create(explorer: Explorer) -> Explorer:
     try:
         return service.create(explorer)
     except Duplicate as exc:
-        raise HTTPException(status_code=403, detail=exc.msg)
+        raise HTTPException(status_code=400, detail=exc.msg)
 
 
 
@@ -41,7 +41,7 @@ def modify(name: str, explorer: ExplorerUpdate) -> Explorer:
     except (Missing, Duplicate) as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
     except Validation as exc:
-        raise HTTPException(status_code=403, detail=exc.msg)
+        raise HTTPException(status_code=400, detail=exc.msg)
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)
