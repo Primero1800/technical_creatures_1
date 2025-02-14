@@ -18,9 +18,9 @@ def replace(explorer: Explorer) -> Explorer:
     return data.replace(explorer)
 
 
-def modify(explorer: Explorer) -> Explorer:
-    return data.modify(explorer)
+def modify(name: str, explorer: Explorer) -> Explorer:
+    return data.modify(name, explorer)
 
 
-def delete(explorer: Explorer) -> bool:
-    return data.delete(explorer)
+def delete(name: str) -> bool:
+    return data.delete(name)

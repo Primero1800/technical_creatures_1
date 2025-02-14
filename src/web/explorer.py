@@ -27,8 +27,8 @@ def create(explorer: Explorer) -> Explorer:
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.patch("/", status_code=status.HTTP_200_OK)
-def modify(explorer: Explorer) -> Explorer:
-    return service.modify(explorer)
+def modify(name: str, explorer: Explorer) -> Explorer:
+    return service.modify(name, explorer)
 
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)
@@ -40,4 +40,4 @@ def replace(explorer: Explorer) -> Explorer:
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
 @router.delete("/{name}/", status_code=status.HTTP_204_NO_CONTENT)
 def delete(name: str):
-    return None
+    return service.delete(name)
