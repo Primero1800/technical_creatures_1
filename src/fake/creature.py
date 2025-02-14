@@ -10,7 +10,7 @@ _creatures = [
     Creature(
         name="Bigfoot",
         description="Yeti's Cousin Eddie",
-        country="US",
+        country="Yeti's Cousin Eddie",
         area="*",
         aka="Sasquatch"),
     Creature(

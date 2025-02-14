@@ -43,7 +43,7 @@ def create(creature: Creature) -> Creature:
             session.execute(text(query), params)
             session.commit()
         except IntegrityError:
-            raise Duplicate(msg=f"Creature{creature.name} already exists")
+            raise Duplicate(msg=f"Creature {creature.name} already exists")
     return get_one(creature.name)
 
 
