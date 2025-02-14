@@ -15,7 +15,6 @@ app = FastAPI()
 app.include_router(explorer.router)
 app.include_router(creature.router)
 
-# FastAPIInstrumentor(app=app)
 FastAPIInstrumentor.instrument_app(app)
 tracer = trace.get_tracer(__name__)
 

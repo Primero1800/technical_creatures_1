@@ -2,6 +2,8 @@ fastapi
 uvicorn
 httpie
 pytest
+pytest-mock
+httpx
 
 opentelemetry-api
 opentelemetry-sdk
