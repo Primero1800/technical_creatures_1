@@ -12,10 +12,10 @@ services:
       - jaeger
     environment:
       DB_HOST: host.docker.internal
-#      - JAEGER_AGENT_HOST=jaeger
-#      - JAEGER_AGENT_PORT=6831
-#      - JAEGER_HOST=jaeger
-#      - JAEGER_PORT=14268
+#      JAEGER_AGENT_HOST: jaeger
+#      JAEGER_AGENT_PORT: 6831
+#      JAEGER_HOST: jaeger
+#      JAEGER_PORT: 14268
       JAEGER_COLLECTOR_ENDPOINT: jaeger
       JAEGER_COLLECTOR_PORT: 4318
 #    command: [ "uvicorn",  "src.main:app",  "--host",  "0.0.0.0", "--reload" ]
@@ -36,3 +36,23 @@ services:
     environment:
       COLLECTOR_ZIPKIN_HTTP_PORT: 9411
     restart: unless-stopped
+
+
+  webapp_auth:
+    restart: unless-stopped
+    build:
+      context: ./
+    ports:
+      - "8001:8000"
+    depends_on:
+      - jaeger
+    environment:
+      DB_HOST: host.docker.internal
+      #      JAEGER_AGENT_HOST: jaeger
+      #      JAEGER_AGENT_PORT: 6831
+      #      JAEGER_HOST: jaeger
+      #      JAEGER_PORT: 14268
+      JAEGER_COLLECTOR_ENDPOINT: jaeger
+      JAEGER_COLLECTOR_PORT: 4318
+    #    command: [ "uvicorn",  "src.main:app",  "--host",  "0.0.0.0", "--reload" ]
+    command: bash -c "uvicorn src.auth:app --host 0.0.0.0 --reload"
