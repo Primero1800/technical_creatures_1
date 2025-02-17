@@ -16,23 +16,23 @@ def model_to_dict(user: User) -> dict:
 
 def get_one(name: str) -> User:
     with Session() as session:
-        query = "select * from user where name=:name"
+        query = "select * from user_active where name=:name"
         params = {"name": name}
         row = session.execute(text(query), params).fetchone()
         if row:
             return row_to_model(row)
         else:
-            raise Missing(msg=f"Explorer {name} not found")
+            raise Missing(msg=f"User {name} not found")
 
 
 def get_all() -> list[User]:
     with Session() as session:
-        query = "select * from user"
+        query = "select * from user_active"
         rows = session.execute(text(query)).fetchall()
     return [row_to_model(row) for row in rows]
 
 
-def create(user: User, table: str = "user") -> User:
+def create(user: User, table: str = "user_active") -> User:
     with Session() as session:
         query = f"""
             insert into {table} values
@@ -60,7 +60,7 @@ def modify(name: str, params: dict):
 
     with Session() as session:
         query = """
-            update user
+            update user_active
             set name=:name,
             hash=:hash
             where name=:name_orig
@@ -80,12 +80,12 @@ def modify(name: str, params: dict):
 def delete(name: str) -> bool:
     with Session() as session:
         user = get_one(name)
-        query = "delete from user where name = :name"
+        query = "delete from user_active where name = :name"
         params = {"name": name}
         result = session.execute(text(query), params)
         session.commit()
         if result.rowcount > 0:
-            create(user, table="xuser")
+            create(user, table="user_deleted")
             return True
         else:
-            raise Missing(msg=f"Explorer {name} not found")
+            raise Missing(msg=f"User {name} not found")
