@@ -85,7 +85,10 @@ def delete(name: str) -> bool:
         result = session.execute(text(query), params)
         session.commit()
         if result.rowcount > 0:
-            create(user, table="user_deleted")
+            try:
+                create(user, table="user_deleted")
+            except Duplicate as exc:
+                pass
             return True
         else:
             raise Missing(msg=f"User {name} not found")
