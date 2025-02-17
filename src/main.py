@@ -1,7 +1,7 @@
 import json
 
 import httpx
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBasicCredentials
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
@@ -45,14 +45,17 @@ def test_endpoint():
 def test_endpoint(creds: HTTPBasicCredentials = Depends(basic)):
     with httpx.Client() as client:
         response = client.get(
-            'http://webapp_auth/who',
+            'http://webapp_auth:8000/who',
             auth=(creds.username, creds.password)
         )
-        return {
-            'status_code': response.status_code,
-            'headers': response.headers,
-            'content': json.loads(response.text)
-        }
+        if response.status_code == 200:
+            return {
+                'status_code': response.status_code,
+                'headers': response.headers,
+                'content': json.loads(response.text)
+            }
+        else:
+            raise HTTPException(status_code=response.status_code, detail=json.loads(response.text)['detail'])
 
 
 if __name__ == "__main__":
