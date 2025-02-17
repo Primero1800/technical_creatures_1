@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-if os.getenv("FAKE"):
+if os.getenv("FAKE") == str(True):
     print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FAKE SERVICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     import src.mock.user as service
 else:

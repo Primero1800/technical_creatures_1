@@ -7,7 +7,7 @@ from src.model.user import User
 
 load_dotenv()
 
-if os.getenv('FAKE') == True:
+if os.getenv('FAKE') == str(True):
     print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FAKE DATA !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     import src.mock.user as data
 else:
