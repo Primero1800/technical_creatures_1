@@ -39,7 +39,6 @@ def create(explorer: Explorer) -> Explorer:
             (:name, :country, :description)
         """
         params = model_to_dict(explorer)
-
         try:
             session.execute(text(query), params)
             session.commit()
