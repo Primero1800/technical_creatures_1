@@ -52,5 +52,17 @@ def init_explorer():
         session.commit()
 
 
+def init_user():
+    with Session() as session:
+        session.execute(text("""
+            CREATE TABLE IF NOT EXISTS user (
+                name VARCHAR(255) primary key,
+                hash VARCHAR(255)
+            )
+        """))
+        session.commit()
+
+
 init_creature()
 init_explorer()
+init_user()
