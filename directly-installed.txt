@@ -13,3 +13,7 @@ opentelemetry-instrumentation-fastapi
 
 postgres
 sqlalchemy
+
+python-jose[cryptography]
+passlib
+python-multipart
