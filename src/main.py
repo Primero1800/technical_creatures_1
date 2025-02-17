@@ -9,7 +9,7 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from starlette import status
 
 from src.auth import basic
-from src.web import explorer, creature
+from src.web import explorer, creature, user
 
 from src.utils import init_otel
 
@@ -20,6 +20,7 @@ RequestsInstrumentor().instrument()
 app = FastAPI()
 app.include_router(explorer.router)
 app.include_router(creature.router)
+app.include_router(user.router)
 
 FastAPIInstrumentor.instrument_app(app)
 tracer = trace.get_tracer(__name__)
