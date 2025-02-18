@@ -34,9 +34,11 @@ def get_jwt_username(token:str) -> str | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return None
     except jwt.JWTError:
+        print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!!')
         return None
     return username
 

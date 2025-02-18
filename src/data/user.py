@@ -77,6 +77,24 @@ def modify(name: str, params: dict):
             raise Missing(msg=f"User {params['name']} not found")
 
 
+def replace(user: User):
+    with Session() as session:
+        query = """
+            update user_active
+            set name=:name,
+            hash=:hash
+            where name=:name_orig
+        """
+        params = model_to_dict(user)
+        params["name_orig"] = user.name
+        result = session.execute(text(query), params)
+        if result.rowcount > 0:
+            session.commit()
+            return get_one(user.name)
+        else:
+            raise Missing(msg=f"User {user.name} not found")
+
+
 def delete(name: str) -> bool:
     with Session() as session:
         user = get_one(name)

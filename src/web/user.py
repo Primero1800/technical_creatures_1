@@ -4,6 +4,7 @@ from datetime import timedelta
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette import status
+from starlette.requests import Request
 
 from src.model.user import User, UserUpdate
 
@@ -21,8 +22,7 @@ from src.errors import Missing, Duplicate, Validation
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-router = APIRouter(prefix = "/user")
-
+router = APIRouter(prefix="/user")
 
 # --- Новые данные auth
 # Эта зависимость создает сообщение в каталоге
@@ -42,7 +42,7 @@ def unauthed():
 # К этой конечной точке направляется любой вызов,
 # содержащий зависимость oauth2_dep():
 @router.post("/token")
-async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
     try:
@@ -58,16 +58,15 @@ async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/token",
-     # Add the openapi_extra parameter to the route decorator
-     openapi_extra={
+@router.get("/token", openapi_extra={
         "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
         "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
-     }
+    }
 )
-def get_access_token(token: str = Depends(oauth2_dep)) -> dict:
+async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
-    return {"token": token}
+    print("HEADERS: ", request.headers)
+    return {"token": token, 'user': service.get_current_user(token), 'headers': request.headers.__dict__}
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)

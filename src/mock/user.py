@@ -2,29 +2,29 @@ from src.model.creature import Creature
 from src.model.user import User
 
 _users = [
-    Creature(
+    User(
         name="primero",
         hash="12345678"),
-    Creature(
+    User(
         name="admin",
         hash="23456781"),
-    Creature(
+    User(
         name="abc",
         hash="34567812"),
-    Creature(
+    User(
         name="xyz",
         hash="45678123"),
-    Creature(
+    User(
         name="roto",
         hash="56781234"),
 ]
 
 _sample_users = [
-    Creature(
+    User(
         name="user",
         hash="password"
     ),
-    Creature(
+    User(
         name="user2",
         hash="password2",
     )
