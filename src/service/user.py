@@ -75,9 +75,10 @@ def create_access_token(
     now = datetime.datetime.now(datetime.UTC)
     if not expires:
         expires = datetime.timedelta(minutes=15)
-        src.update({"exp": now + expires})
-        encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
-        return encoded_jwt
+    src.update({"exp": now + expires})
+    encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
+    print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)
+    return encoded_jwt
 
 
 # --- CRUD-пассивный материал
@@ -91,7 +92,7 @@ def get_one(name) -> User:
 
 
 def create(user: User) -> User:
-    return data.create(user)
+    return data.create(User(name=user.name, hash=get_hash(user.hash)))
 
 
 def modify(name: str, params: dict) -> User:

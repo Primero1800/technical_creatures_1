@@ -45,17 +45,26 @@ def unauthed():
 async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
-    user = service.auth_user(form_data.username, form_data.password)
+    try:
+        user = service.auth_user(form_data.username, form_data.password)
+    except Missing as exc:
+        raise HTTPException(status_code=404, detail=exc.msg)
     if not user:
         unauthed()
     expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = service.create_access_token(
-        data={"sub": user.username}, expires=expires
+        data={"sub": user.name}, expires=expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/token")
+@router.get("/token",
+     # Add the openapi_extra parameter to the route decorator
+     openapi_extra={
+        "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
+        "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
+     }
+)
 def get_access_token(token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
     return {"token": token}
