@@ -101,5 +101,9 @@ def modify(name: str, params: dict) -> User:
     return data.modify(name, params)
 
 
+def replace(user: User) -> User:
+    return data.replace(user)
+
+
 def delete(name: str) -> None:
     return data.delete(name)
