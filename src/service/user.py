@@ -44,6 +44,7 @@ def get_jwt_username(token:str) -> str | None:
 
 
 def get_current_user(token: str) -> User | None:
+    print('GET_CURRENT_USER ', token)
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
     if not (username := get_jwt_username(token)):
         return None

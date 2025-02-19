@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import timedelta
 
@@ -9,6 +10,8 @@ from starlette.requests import Request
 from src.model.user import User, UserUpdate
 
 from dotenv import load_dotenv
+
+from src.temp import MyOAuth2PasswordBearer
 
 load_dotenv()
 
@@ -28,7 +31,7 @@ router = APIRouter(prefix="/user")
 # Эта зависимость создает сообщение в каталоге
 # "/user/token" (из формы с именем пользователя и паролем)
 # и возвращает токен доступа.
-oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_dep = MyOAuth2PasswordBearer(tokenUrl="token")
 
 
 def unauthed():
@@ -59,9 +62,9 @@ async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/token")
-async def get_access_token(token: str = Depends(oauth2_dep)) -> dict:
+async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
-    return {"token": token, 'user': service.get_current_user(token)}
+    return {"token": token, 'user': service.get_current_user(token), 'headers': json.loads(request.headers)}
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)

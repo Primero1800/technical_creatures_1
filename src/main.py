@@ -1,13 +1,20 @@
 import json
+import os
 
 import httpx
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.openapi.docs import (
+    get_redoc_html,
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
 from fastapi.security import HTTPBasicCredentials
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from starlette import status
 
+from src.app_config import create_app
 from src.auth import basic
 from src.web import explorer, creature, user
 
@@ -17,7 +24,13 @@ from src.utils import init_otel
 init_otel()
 RequestsInstrumentor().instrument()
 
-app = FastAPI()
+APP_TITLE = os.getenv('APP_TITLE')
+
+app = create_app(
+    docs_url=None,
+    redoc_url=None,
+)
+
 app.include_router(explorer.router)
 app.include_router(creature.router)
 app.include_router(user.router)
@@ -57,6 +70,33 @@ def test_endpoint(creds: HTTPBasicCredentials = Depends(basic)):
             }
         else:
             raise HTTPException(status_code=response.status_code, detail=json.loads(response.text)['detail'])
+
+
+@app.get('/docs', status_code=status.HTTP_200_OK, include_in_schema=False)
+@app.get('/docs', status_code=status.HTTP_200_OK)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=APP_TITLE + ' Swagger UI',
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+        swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
+        swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
+    )
+
+
+@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+async def swagger_ui_redirect():
+    return get_swagger_ui_oauth2_redirect_html()
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_html():
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - ReDoc",
+        redoc_js_url="https://unpkg.com/redoc@next/bundles/redoc.standalone.js",
+    )
+
 
 
 if __name__ == "__main__":

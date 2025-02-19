@@ -46,6 +46,7 @@ services:
       - "8001:8000"
     depends_on:
       - webapp
+      - jaeger
     environment:
       DB_HOST: host.docker.internal
       #      JAEGER_AGENT_HOST: jaeger

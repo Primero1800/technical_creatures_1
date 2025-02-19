@@ -1,17 +1,12 @@
-explorer_kwargs = {
-    "name": "ex_name",
-    "country": "ex_cou",
-    "description": "ex_des"
-}
+from typing import Optional
 
-kwargs = {
-    # "name": "kw_name",
-    "country": "kw_cou",
-    # "description": "kw_des",
-    "addit": "kw_addit",
-}
+from fastapi.security import OAuth2PasswordBearer
+from starlette.requests import Request
 
-if __name__ == "__main__":
 
-    kwargs = {key:kwargs[key] if key in kwargs else val for key, val in explorer_kwargs.items()}
-    print(kwargs)
+class MyOAuth2PasswordBearer(OAuth2PasswordBearer):
+    async def __call__(self, request: Request) -> Optional[str]:
+        print('HELLO FROM INSIDE OAUTH2')
+        print(request.headers)
+        await super().__call__(request)
+
