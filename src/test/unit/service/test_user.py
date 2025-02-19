@@ -7,6 +7,13 @@ from src.test.fixtures.user import (
 )
 from src.service import user as code
 
+TEST_TOKENS = []
+
+
+def test_service_test_tokens_clear():
+    TEST_TOKENS.clear()
+    assert TEST_TOKENS == []
+
 
 def test_get_all_users_mocked(mocker):
     mock = mocker.patch.object(code, 'get_all', return_value=mock_users)
@@ -118,6 +125,69 @@ def test_service_verify_user_missing(sample):
     except Missing as exc:
         result = exc.msg
     assert result == f"User {sample.name}_bad not found"
+
+
+def test_service_create_access_token(sample):
+    token = code.create_access_token(
+        {'sub': sample.name},
+    )
+    assert token is not None
+    assert type(token) is str
+    TEST_TOKENS.append(token)
+    assert TEST_TOKENS[0] == token
+
+
+def test_service_create_access_token_bad(sample):
+    token = code.create_access_token(
+        {'sub': sample.name + '_bad'},
+    )
+    assert token is not None
+    assert type(token) is str
+    TEST_TOKENS.append(token)
+    assert TEST_TOKENS[1] == token
+
+
+def test_add_test_token_without_username():
+    TEST_TOKENS.append('dddddddddddddddddddddddddddddd'*2)
+
+
+def test_service_get_jwt_username(sample):
+    username = code.get_jwt_username(TEST_TOKENS[0])
+    assert username == sample.name
+
+
+def test_service_get_jwt_username_bad(sample):
+    username = code.get_jwt_username(TEST_TOKENS[1])
+    assert username == sample.name + '_bad'
+
+
+def test_service_get_jwt_username_noname():
+    username = code.get_jwt_username(TEST_TOKENS[2])
+    assert username is None
+
+
+def test_service_get_current_user(sample):
+    try:
+        user = code.get_current_user(TEST_TOKENS[0])
+    except Missing as exc:
+        user = exc.msg
+    assert user.name == sample.name
+
+
+def test_service_get_current_user_bad(sample):
+    try:
+        user = code.get_current_user(TEST_TOKENS[1])
+    except Missing as exc:
+        user = exc.msg
+    assert user == f"User {sample.name}_bad not found"
+
+
+def test_service_get_current_user_noname(sample):
+    try:
+        user = code.get_current_user(TEST_TOKENS[2])
+    except Missing as exc:
+        user = exc.msg
+    assert user is None
 
 
 def test_service_user_get_one(sample):
