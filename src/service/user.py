@@ -33,6 +33,7 @@ def get_hash(plain: str) -> str:
 def get_jwt_username(token:str) -> str | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
+        print("!!!BEFORE PAYLOAD!!!!!!!!!!!!!", 'token: ', token, "SECRET_KEY: ", SECRET_KEY, 'ALGORYTHM: ', ALGORITHM)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):

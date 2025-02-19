@@ -8,7 +8,5 @@ class MyOAuth2PasswordBearer(OAuth2PasswordBearer):
     async def __call__(self, request: Request) -> Optional[str]:
         print('HELLO FROM INSIDE OAUTH2')
         print(request.headers)
-        print(request.body())
-        print(request.path_params)
         await super().__call__(request)
 
