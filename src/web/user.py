@@ -45,7 +45,7 @@ def unauthed():
 # К этой конечной точке направляется любой вызов,
 # содержащий зависимость oauth2_dep():
 @router.post("/token")
-async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
     try:
@@ -68,7 +68,8 @@ async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 )
 async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
-    return {"token": token, 'user': service.get_current_user(token), 'headers': json.loads(request.headers)}
+    print("HEADERS: ", request.headers)
+    return {"token": token, 'user': service.get_current_user(token), 'headers': request.headers.__dict__}
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
