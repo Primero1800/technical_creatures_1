@@ -20,9 +20,10 @@ ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def verify_password(plain: str, hash: str) -> bool:
+def verify_password(plain: str, hash_password: str) -> bool:
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!INSIDE VERIFY_PASSWORD: ', plain, hash_password)
     """Хеширование строки <plain> и сравнение с записью <hash> из базы данных"""
-    return pwd_context.verify(plain, hash)
+    return pwd_context.verify(plain, hash_password)
 
 
 def get_hash(plain: str) -> str:
@@ -65,6 +66,7 @@ def auth_user(name: str, plain: str) -> User | None:
     """Аутентификация пользователя <name> и <plain> пароль"""
     if not (user := lookup_user(name)):
         return None
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!! INSIDE AUTH_USER: ", user.name, user.hash)
     if not verify_password(plain, user.hash):
         return None
     return user

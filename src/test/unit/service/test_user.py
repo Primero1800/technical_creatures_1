@@ -64,6 +64,62 @@ def test_service_user_create_duplicate(sample):
     assert resp == f"User {sample.name} already exists"
 
 
+def test_service_lookup_user(sample):
+    try:
+        user = code.lookup_user(sample.name)
+    except Missing as exc:
+        user = exc.msg
+    assert user.name == sample.name
+
+
+def test_service_lookup_user_bad(sample):
+    try:
+        user = code.lookup_user(sample.name + '_bad')
+    except Missing as exc:
+        user = exc.msg
+    assert user == f"User {sample.name}_bad not found"
+
+
+def test_service_auth_user(sample):
+    try:
+        result = code.auth_user(sample.name, sample.hash)
+    except Missing as exc:
+        result = exc.msg
+    assert result .name == sample.name
+
+
+def test_service_auth_user_bad(sample):
+    try:
+        result = code.auth_user(sample.name + '_bad', sample.hash)
+    except Missing as exc:
+        result = exc.msg
+    assert result == f"User {sample.name}_bad not found"
+
+
+def test_service_verify_user(sample):
+    try:
+        result = code.verify_password(sample.hash, code.get_one(sample.name).hash)
+    except Missing as exc:
+        result = exc.msg
+    assert result is True
+
+
+def test_service_verify_user_bad_hash(sample):
+    try:
+        result = code.verify_password(sample.hash + '_bad', code.get_one(sample.name).hash)
+    except Missing as exc:
+        result = exc.msg
+    assert result is False
+
+
+def test_service_verify_user_missing(sample):
+    try:
+        result = code.verify_password(sample.hash, code.get_one(sample.name + '_bad').hash)
+    except Missing as exc:
+        result = exc.msg
+    assert result == f"User {sample.name}_bad not found"
+
+
 def test_service_user_get_one(sample):
     try:
         resp = code.get_one(sample.name)
