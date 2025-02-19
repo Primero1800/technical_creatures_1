@@ -9,3 +9,11 @@ def get(url=None, token=None):
         print(response.request.headers)
         print(response.status_code)
         print(response.headers)
+
+
+if __name__ == "__main__":
+    while True:
+        token=input("Input token: ")
+        if token == 'q':
+            break
+        get(token=token)
