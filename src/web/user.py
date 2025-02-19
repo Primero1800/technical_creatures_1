@@ -61,7 +61,11 @@ async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/token")
+@router.get("/token", openapi_extra={
+        "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
+        "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
+    }
+)
 async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
     return {"token": token, 'user': service.get_current_user(token), 'headers': json.loads(request.headers)}
