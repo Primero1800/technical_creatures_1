@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from src.mock.user import _sample_users as sample_users
 from src.model.user import User
@@ -60,3 +62,15 @@ def sample_dict_extended(sample) -> dict:
     result['added'] = 'added'
     result['added2'] = 'added2'
     return result
+
+
+@pytest.fixture
+def oauth2data(sample) -> dict:
+    return {
+        'grant_type': "password",
+        'username': sample.name,
+        'password': sample.hash,
+        'scope': "",
+        'client_id': os.getenv('OAUTH_CLIENT_ID'),
+        'client_secret': os.getenv('SECRET_KEY'),
+    }

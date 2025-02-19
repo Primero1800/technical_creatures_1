@@ -8,11 +8,13 @@ from src.errors import Missing
 from src.mock.user import _users as mock_users
 from src.test.fixtures.user import (
     sample, sample2, sample_dict, sample_dict_, sample_dict_extended, sample_dict_duplicate,
-    sample_dict_bad, sample_dict_not_full, sample_dict_not_full_bad
+    sample_dict_bad, sample_dict_not_full, sample_dict_not_full_bad, oauth2data,
 )
 from src.web import user
 import src.service.user as service
 
+
+TEST_TOKENS = []
 
 @pytest.fixture
 def test_app():
@@ -24,6 +26,11 @@ def test_app():
 @pytest.fixture
 def test_client(test_app):
     return TestClient(test_app)
+
+
+def test_clear_test_tokens():
+    TEST_TOKENS.clear()
+    assert TEST_TOKENS == []
 
 
 def test_get_all_users_mocked(test_client, mocker):
@@ -78,6 +85,64 @@ def test_create_user2_success(test_client, sample2):
     response = test_client.post("/user/", json=sample2.model_dump())
     assert response.status_code == 201
     assert json.loads(response.text)['name'] == sample2.model_dump()['name']
+
+
+def test_create_access_token(test_client, sample, oauth2data):
+    response = test_client.post(
+        "/user/token",
+        data=oauth2data
+    )
+    assert response.status_code == 200
+    response_text = json.loads(response.text)
+    assert response_text['token_type'] == 'bearer'
+    TEST_TOKENS.append("Bearer " + response_text['access_token'])
+
+
+def test_create_access_token_bad(test_client, sample, oauth2data):
+    oauth2data['password'] = '********'
+    response = test_client.post(
+        "/user/token",
+        data=oauth2data
+    )
+    assert response.status_code == 401
+
+
+def test_create_access_token_nouser(test_client, sample, oauth2data):
+    oauth2data['username'] += '_bad'
+    response = test_client.post(
+        "/user/token",
+        data=oauth2data
+    )
+    assert response.status_code == 404
+
+
+def test_create_access_token_random():
+    TEST_TOKENS.append('Bearer ' + 'dddddddddddddd'*3)
+    assert len(TEST_TOKENS) == 2
+
+
+def test_get_access_token(test_client, sample):
+    response = test_client.get(
+        "/user/token",
+        headers={
+            "Authorization": TEST_TOKENS[0],
+        }
+    )
+    assert response.status_code == 200
+    response_text = json.loads(response.text)
+    assert response_text['user']['name'] == sample.name
+
+
+def test_get_access_token(test_client):
+    response = test_client.get(
+        "/user/token",
+        headers={
+            "Authorization": TEST_TOKENS[1],
+        }
+    )
+    assert response.status_code == 200
+    response_text = json.loads(response.text)
+    assert response_text['user'] is None
 
 
 def test_get_one_success(test_client, sample):
