@@ -1,4 +1,4 @@
-import json
+from requests.structures import CaseInsensitiveDict
 import os
 from datetime import timedelta
 
@@ -61,14 +61,21 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/token", openapi_extra={
+@router.get("/token",
+    openapi_extra={
         "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
         "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
     }
 )
-async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
+async def get_access_token(request: Request) -> dict:
     """Возврат текущего токена доступа"""
     print("HEADERS: ", request.headers)
+    try:
+        case_insensitive_headers = CaseInsensitiveDict(request.headers)
+        token = case_insensitive_headers.get('Authorization')
+        print('INSENSIVE AUTORIZATION: ', token)
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail=exc.errors())
     return {"token": token, 'user': service.get_current_user(token), 'headers': request.headers.__dict__}
 
 
