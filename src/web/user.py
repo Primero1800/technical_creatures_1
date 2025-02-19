@@ -31,7 +31,7 @@ router = APIRouter(prefix="/user")
 # Эта зависимость создает сообщение в каталоге
 # "/user/token" (из формы с именем пользователя и паролем)
 # и возвращает токен доступа.
-oauth2_dep = MyOAuth2PasswordBearer(tokenUrl="token")
+oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def unauthed():
@@ -61,21 +61,15 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/token",
-    openapi_extra={
+# http http://127.0.0.1:8000/user/token  "Authorization: Bearer <token>"
+@router.get("/token", openapi_extra={
         "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
         "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
     }
 )
-async def get_access_token(request: Request) -> dict:
+async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
     print("HEADERS: ", request.headers)
-    try:
-        case_insensitive_headers = CaseInsensitiveDict(request.headers)
-        token = case_insensitive_headers.get('Authorization')
-        print('INSENSIVE AUTORIZATION: ', token)
-    except Exception as exc:
-        raise HTTPException(status_code=401, detail=exc.errors())
     return {"token": token, 'user': service.get_current_user(token), 'headers': request.headers.__dict__}
 
 
