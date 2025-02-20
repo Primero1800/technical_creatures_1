@@ -1,4 +1,6 @@
 import os
+import sys
+
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
@@ -8,13 +10,14 @@ load_dotenv()
 
 
 def get_db_connection():
+    db_name = os.getenv('DB_NAME_TEST') if 'pytest' in sys.modules else os.getenv('DB_NAME')
     return '{}://{}:{}@{}:{}/{}'.format(
         os.getenv('DB_ENGINE'),
         os.getenv('DB_USER'),
         os.getenv('DB_PASSWORD'),
         os.getenv('DB_HOST'),
         os.getenv('DB_PORT'),
-        os.getenv('DB_NAME')
+        db_name,
     )
 
 
