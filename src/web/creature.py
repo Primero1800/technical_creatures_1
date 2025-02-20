@@ -11,13 +11,13 @@ router = APIRouter(prefix='/creature')
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.get("/", status_code=status.HTTP_200_OK)
-def get_all() -> list[Creature]:
+async def get_all() -> list[Creature]:
     return service.get_all()
 
 
 @router.get("/{name}", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.get("/{name}/", status_code=status.HTTP_200_OK)
-def get_one(name) -> Creature | None:
+async def get_one(name) -> Creature | None:
     try:
         return service.get_one(name)
     except Missing as exc:
@@ -26,7 +26,7 @@ def get_one(name) -> Creature | None:
 
 @router.post("", status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create(creature: Creature) -> Creature:
+async def create(creature: Creature) -> Creature:
     try:
         return service.create(creature)
     except Duplicate as exc:
@@ -35,7 +35,7 @@ def create(creature: Creature) -> Creature:
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.patch("/", status_code=status.HTTP_200_OK)
-def modify(name: str, creature: CreatureUpdate) -> Creature:
+async def modify(name: str, creature: CreatureUpdate) -> Creature:
     try:
         return service.modify(name, creature.model_dump(exclude_unset=True))
     except Missing as exc:
@@ -46,7 +46,7 @@ def modify(name: str, creature: CreatureUpdate) -> Creature:
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.put("/", status_code=status.HTTP_200_OK)
-def replace(creature: Creature) -> Creature:
+async def replace(creature: Creature) -> Creature:
     try:
         return service.replace(creature)
     except Missing as exc:
@@ -55,7 +55,7 @@ def replace(creature: Creature) -> Creature:
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
 @router.delete("/{name}/", status_code=status.HTTP_204_NO_CONTENT)
-def delete(name: str):
+async def delete(name: str):
     try:
         return service.delete(name)
     except Missing as exc:

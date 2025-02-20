@@ -75,13 +75,13 @@ async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.get("/", status_code=status.HTTP_200_OK)
-def get_all() -> list[User]:
+async def get_all() -> list[User]:
     return service.get_all()
 
 
 @router.get("/{name}", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.get("/{name}/", status_code=status.HTTP_200_OK)
-def get_one(name) -> User | None:
+async def get_one(name) -> User | None:
     try:
         return service.get_one(name)
     except Missing as exc:
@@ -90,7 +90,7 @@ def get_one(name) -> User | None:
 
 @router.post("", status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create(user: User) -> User:
+async def create(user: User) -> User:
     try:
         return service.create(user)
     except Duplicate as exc:
@@ -99,7 +99,7 @@ def create(user: User) -> User:
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.patch("/", status_code=status.HTTP_200_OK)
-def modify(name: str, user: UserUpdate) -> User:
+async def modify(name: str, user: UserUpdate) -> User:
     try:
         return service.modify(name, user.model_dump(exclude_unset=True))
     except Missing as exc:
@@ -110,7 +110,7 @@ def modify(name: str, user: UserUpdate) -> User:
 
 @router.put("", status_code=status.HTTP_200_OK, include_in_schema=False)
 @router.put("/", status_code=status.HTTP_200_OK)
-def replace(user: User) -> User:
+async def replace(user: User) -> User:
     try:
         return service.replace(user)
     except Missing as exc:
@@ -119,7 +119,7 @@ def replace(user: User) -> User:
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
 @router.delete("/{name}/", status_code=status.HTTP_204_NO_CONTENT)
-def delete(name: str):
+async def delete(name: str):
     try:
         return service.delete(name)
     except Missing as exc:
