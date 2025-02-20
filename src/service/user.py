@@ -2,18 +2,16 @@ import os
 import datetime
 from dotenv import load_dotenv
 from jose import jwt
-
 from src.model.user import User
+from passlib.context import CryptContext
 
 load_dotenv()
 
 if os.getenv('FAKE') == str(True):
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FAKE DATA !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     import src.mock.user as data
 else:
     import src.data.user as data
 
-from passlib.context import CryptContext
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
@@ -31,28 +29,37 @@ def get_hash(plain: str) -> str:
     return pwd_context.hash(plain)
 
 
-def get_jwt_username(token:str) -> str | None:
+def get_jwt_username(token:str) -> dict | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
-        print("!!!BEFORE PAYLOAD!!!!!!!!!!!!!", 'token: ', token, "SECRET_KEY: ", SECRET_KEY, 'ALGORYTHM: ', ALGORITHM)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
-            return None
+            return {}
+        if not (expires := payload.get('exp')):
+            return {}
     except jwt.JWTError:
         print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        return None
-    return username
+        return {}
+    return {
+        'username': username,
+        'expires': expires,
+    }
 
 
-def get_current_user(token: str) -> User | None:
+def get_current_user(token: str) -> dict | None:
     print('GET_CURRENT_USER ', token)
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
-    if not (username := get_jwt_username(token)):
-        return None
+    jwt_info = get_jwt_username(token)
+    if not jwt_info or not isinstance(jwt_info, dict):
+        return {}
+    username = jwt_info.get('username', None)
     if user := lookup_user(username):
-        return user
-    return None
+        return {
+            'user': user,
+            'expires': jwt_info.get('expires', None)
+        }
+    return {}
 
 
 def lookup_user(username: str) -> User | None:

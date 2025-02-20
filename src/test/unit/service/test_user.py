@@ -152,17 +152,17 @@ def test_add_test_token_without_username():
 
 
 def test_service_get_jwt_username(sample):
-    username = code.get_jwt_username(TEST_TOKENS[0])
+    username = (code.get_jwt_username(TEST_TOKENS[0])).get('username', None)
     assert username == sample.name
 
 
 def test_service_get_jwt_username_bad(sample):
-    username = code.get_jwt_username(TEST_TOKENS[1])
+    username = (code.get_jwt_username(TEST_TOKENS[1])).get('username', None)
     assert username == sample.name + '_bad'
 
 
 def test_service_get_jwt_username_noname():
-    username = code.get_jwt_username(TEST_TOKENS[2])
+    username = (code.get_jwt_username(TEST_TOKENS[2])).get('username', None)
     assert username is None
 
 
@@ -171,7 +171,9 @@ def test_service_get_current_user(sample):
         user = code.get_current_user(TEST_TOKENS[0])
     except Missing as exc:
         user = exc.msg
-    assert user.name == sample.name
+    assert isinstance(user, dict)
+    assert 'user' in user
+    assert user['user'].name == sample.name
 
 
 def test_service_get_current_user_bad(sample):
@@ -187,7 +189,7 @@ def test_service_get_current_user_noname(sample):
         user = code.get_current_user(TEST_TOKENS[2])
     except Missing as exc:
         user = exc.msg
-    assert user is None
+    assert user == {}
 
 
 def test_service_user_get_one(sample):

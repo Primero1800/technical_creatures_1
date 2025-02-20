@@ -142,7 +142,7 @@ def test_get_access_token(test_client):
     )
     assert response.status_code == 200
     response_text = json.loads(response.text)
-    assert response_text['user'] is None
+    assert response_text['data'] == {}
 
 
 def test_get_one_success(test_client, sample):

@@ -56,7 +56,10 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
         unauthed()
     expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = service.create_access_token(
-        data={"sub": user.name}, expires=expires
+        data={
+            "sub": user.name,
+        },
+        expires=expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -70,7 +73,7 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
 async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
     """Возврат текущего токена доступа"""
     print("HEADERS: ", request.headers)
-    return {"token": token, 'user': service.get_current_user(token), 'headers': request.headers.__dict__}
+    return {"token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)}
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
