@@ -11,8 +11,6 @@ from src.model.user import User, UserUpdate
 
 from dotenv import load_dotenv
 
-from src.temp import MyOAuth2PasswordBearer
-
 load_dotenv()
 
 if os.getenv("FAKE") == str(True):
@@ -34,10 +32,10 @@ router = APIRouter(prefix="/user")
 oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def unauthed():
+async def unauthed(detail="Incorrect username or password"):
     raise HTTPException(
         status_code=401,
-        detail="Incorrect username or password",
+        detail=detail,
         headers={"WWW-Authenticate": "Bearer"},
     )
 
@@ -53,7 +51,7 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
     except Missing as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
     if not user:
-        unauthed()
+        await unauthed()
     expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = service.create_access_token(
         data={
@@ -74,6 +72,22 @@ async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -
     """Возврат текущего токена доступа"""
     print("HEADERS: ", request.headers)
     return {"token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)}
+
+
+async def login_required(user_data: dict = Depends(get_access_token)):
+    try:
+        user = user_data['data']['user']
+    except KeyError:
+        await unauthed(
+            detail="Not authenticated",
+        )
+    return user
+
+
+@router.get("/test_jwtauth")
+async def get_test_jwt_auth(request: Request, user = Depends(login_required)):
+    return user
+
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
