@@ -76,18 +76,8 @@ async def get_access_token(request: Request, token: str = Depends(auth_depends.g
     return {"token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)}
 
 
-async def login_required(user_data: dict = Depends(get_access_token)):
-    try:
-        user = user_data['data']['user']
-    except KeyError:
-        await auth_depends.unauthed(
-            detail="Not authenticated",
-        )
-    return user
-
-
 @router.get("/test_jwtauth")
-async def get_test_jwt_auth(request: Request, user=Depends(login_required)):
+async def get_test_jwt_auth(user=Depends(auth_depends.login_required)):
     return user
 
 
