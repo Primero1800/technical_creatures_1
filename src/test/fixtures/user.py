@@ -3,11 +3,7 @@ import os
 import pytest
 from src.mock.user import _sample_users as sample_users
 from src.model.user import User
-
-
-@pytest.fixture
-def sample() -> User:
-    return sample_users[0]
+from src.test.fixtures.glob import sample
 
 
 @pytest.fixture

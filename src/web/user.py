@@ -40,7 +40,7 @@ oauth2_dep = oauth2_scheme
 async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
-    return auth_depends.generate_token_for_user(
+    return await auth_depends.generate_token_for_user(
         username=form_data.username,
         password=form_data.password
     )
