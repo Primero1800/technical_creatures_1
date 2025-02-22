@@ -22,3 +22,10 @@ def test_client(test_app):
 @pytest.fixture
 def sample() -> User:
     return sample_users[0]
+
+
+@pytest.fixture
+def custom_request_class():
+    class CustomRequest:
+        headers = {}
+    return CustomRequest
