@@ -2,13 +2,12 @@ import json
 import os
 
 import httpx
-from fastapi import Depends, HTTPException, FastAPI
+from fastapi import Depends, HTTPException
 from fastapi.openapi.docs import (
     get_redoc_html,
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
-from fastapi.openapi.utils import get_openapi
 from fastapi.security import HTTPBasicCredentials
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
