@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Callable
 
 import httpx
 from fastapi import Depends, HTTPException, FastAPI
@@ -34,37 +34,40 @@ app = create_app(
 )
 
 
-def custom_openapi(app: FastAPI) -> Dict[str, Any]:
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = get_openapi(
-        title="FastAPI application",
-        version="1.0.0",
-        description="JWT Authentication and Authorization",
-        routes=app.routes,
-    )
-    openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT"
-        },
-        # "BasicAuth": {
-        #     "type": "http",
-        #     "scheme": "basic"
-        # },
-    }
+def get_custom_openapi(subject: FastAPI) -> Callable[[FastAPI], Dict[str, Any]]:
+    def custom_openapi() -> Dict[str, Any]:
+        if subject.openapi_schema:
+            return app.openapi_schema
+        openapi_schema = get_openapi(
+            title="FastAPI application",
+            version="1.0.0",
+            description="JWT Authentication and Authorization",
+            routes=app.routes,
+        )
+        openapi_schema["components"]["securitySchemes"] = {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            # "BasicAuth": {
+            #     "type": "http",
+            #     "scheme": "basic"
+            # },
+        }
 
-    openapi_schema["security"] = [
-        {"BearerAuth": []},
-        # {"BasicAuth": []}
-    ]
+        openapi_schema["security"] = [
+            {"BearerAuth": []},
+            # {"BasicAuth": []}
+        ]
 
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+        subject.openapi_schema = openapi_schema
+        return subject.openapi_schema
+
+    return custom_openapi
 
 
-app.openapi = custom_openapi
+app.openapi = get_custom_openapi(app)
 
 
 app.include_router(explorer.router)
