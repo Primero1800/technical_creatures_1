@@ -1,13 +1,15 @@
 import json
 import os
+from typing import Dict, Any
 
 import httpx
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, FastAPI
 from fastapi.openapi.docs import (
     get_redoc_html,
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
+from fastapi.openapi.utils import get_openapi
 from fastapi.security import HTTPBasicCredentials
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
@@ -30,6 +32,40 @@ app = create_app(
     docs_url=None,
     redoc_url=None,
 )
+
+
+def custom_openapi(app: FastAPI) -> Dict[str, Any]:
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="FastAPI application",
+        version="1.0.0",
+        description="JWT Authentication and Authorization",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+        },
+        # "BasicAuth": {
+        #     "type": "http",
+        #     "scheme": "basic"
+        # },
+    }
+
+    openapi_schema["security"] = [
+        {"BearerAuth": []},
+        # {"BasicAuth": []}
+    ]
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
 
 app.include_router(explorer.router)
 app.include_router(creature.router)
