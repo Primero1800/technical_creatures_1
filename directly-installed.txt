@@ -3,6 +3,7 @@ uvicorn
 httpie
 pytest
 pytest-mock
+pytest-asyncio
 httpx
 
 opentelemetry-api
