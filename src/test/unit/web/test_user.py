@@ -1,31 +1,18 @@
 import json
 
-import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
 from src.errors import Missing
 from src.mock.user import _users as mock_users
 from src.test.fixtures.user import (
-    sample, sample2, sample_dict, sample_dict_, sample_dict_extended, sample_dict_duplicate,
+    sample2, sample_dict, sample_dict_, sample_dict_extended, sample_dict_duplicate,
     sample_dict_bad, sample_dict_not_full, sample_dict_not_full_bad, oauth2data,
 )
-from src.web import user
+from src.test.fixtures.glob import (
+    test_client, test_app, sample
+)
 import src.service.user as service
 
 
 TEST_TOKENS = []
-
-@pytest.fixture
-def test_app():
-    app = FastAPI()
-    app.include_router(user.router)
-    return app
-
-
-@pytest.fixture
-def test_client(test_app):
-    return TestClient(test_app)
 
 
 def test_clear_test_tokens():
