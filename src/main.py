@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Dict, Any, Callable
 
 import httpx
 from fastapi import Depends, HTTPException, FastAPI
@@ -16,7 +15,7 @@ from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from starlette import status
 
-from src.app_config import create_app
+from src.app_config import create_app, get_custom_openapi
 from src.auth import basic
 from src.web import explorer, creature, user
 
@@ -32,40 +31,6 @@ app = create_app(
     docs_url=None,
     redoc_url=None,
 )
-
-
-def get_custom_openapi(subject: FastAPI) -> Callable[[FastAPI], Dict[str, Any]]:
-    def custom_openapi() -> Dict[str, Any]:
-        if subject.openapi_schema:
-            return app.openapi_schema
-        openapi_schema = get_openapi(
-            title="FastAPI application",
-            version="1.0.0",
-            description="JWT Authentication and Authorization",
-            routes=app.routes,
-        )
-        openapi_schema["components"]["securitySchemes"] = {
-            "BearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            },
-            # "BasicAuth": {
-            #     "type": "http",
-            #     "scheme": "basic"
-            # },
-        }
-
-        openapi_schema["security"] = [
-            {"BearerAuth": []},
-            # {"BasicAuth": []}
-        ]
-
-        subject.openapi_schema = openapi_schema
-        return subject.openapi_schema
-
-    return custom_openapi
-
 
 app.openapi = get_custom_openapi(app)
 
