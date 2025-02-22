@@ -1,8 +1,12 @@
+import os
+from datetime import timedelta
+
 from fastapi import HTTPException, Depends
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette import status
 from starlette.requests import Request
 
+from src.errors import Missing
 from src.service import user as service_user
 
 
@@ -22,6 +26,23 @@ async def get_token_from_request(request: Request):
             detail="Not authenticated"
         )
     return param
+
+
+async def generate_token_for_user(username: str, password: str):
+    try:
+        user = service_user.auth_user(username, password)
+    except Missing as exc:
+        raise HTTPException(status_code=404, detail=exc.msg)
+    if not user:
+        await unauthed()
+    expires = timedelta(minutes=float(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')))
+    access_token = service_user.create_access_token(
+        data={
+            "sub": user.name,
+        },
+        expires=expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 async def login_required(token: str = Depends(get_token_from_request)) -> dict:

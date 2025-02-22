@@ -1,6 +1,5 @@
 import os
 import src.dependencies.authentification as auth_depends
-from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -34,23 +33,6 @@ router = APIRouter(prefix="/user")
 oauth2_dep = oauth2_scheme
 
 
-async def generate_token_for_user(username: str, password: str):
-    try:
-        user = service.auth_user(username, password)
-    except Missing as exc:
-        raise HTTPException(status_code=404, detail=exc.msg)
-    if not user:
-        await auth_depends.unauthed()
-    expires = timedelta(minutes=float(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')))
-    access_token = service.create_access_token(
-        data={
-            "sub": user.name,
-        },
-        expires=expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
 
 # К этой конечной точке направляется любой вызов,
 # содержащий зависимость oauth2_dep():
@@ -58,7 +40,7 @@ async def generate_token_for_user(username: str, password: str):
 async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
-    return await generate_token_for_user(
+    return await auth_depends.generate_token_for_user(
         username=form_data.username,
         password=form_data.password
     )
@@ -107,7 +89,7 @@ async def create(user: User) -> User:
 
 
 @router.post("/login", status_code=status.HTTP_200_OK) # login root
-async def login(token_info: dict = Depends(generate_token_for_user)) -> dict:
+async def login(token_info: dict = Depends(auth_depends.generate_token_for_user)) -> dict:
     return token_info
 
 
