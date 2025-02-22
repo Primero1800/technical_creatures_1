@@ -1,9 +1,18 @@
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette import status
 
-app = FastAPI()
+from src.config.app_config import create_app
+from src.config.swagger_config import config_swagger
+
+app = create_app(
+    docs_url=None,
+    redoc_url=None,
+)
+
+APP_TITLE = 'Who'
+
 basic = HTTPBasic()
 
 SECRET_USER: str = 'primero'
@@ -23,6 +32,9 @@ def get_user(creds: HTTPBasicCredentials = Depends(basic)):
         }
     else:
         raise HTTPException(status_code=401, detail="Hey! Go away!")
+
+
+config_swagger(app, APP_TITLE)
 
 
 if __name__ == "__main__":

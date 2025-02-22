@@ -2,11 +2,11 @@ import os
 import src.dependencies.authentification as auth_depends
 
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 from starlette.requests import Request
 
-from src.app_config import oauth2_scheme
+from src.config.app_config import oauth2_scheme
 from src.model.user import User, UserUpdate
 
 

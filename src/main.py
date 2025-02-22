@@ -14,7 +14,8 @@ from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from starlette import status
 
-from src.app_config import create_app, get_custom_openapi
+from src.config.app_config import create_app, get_custom_openapi
+from src.config.swagger_config import config_swagger
 from src.auth import basic
 from src.web import explorer, creature, user
 
@@ -75,31 +76,7 @@ def test_endpoint(creds: HTTPBasicCredentials = Depends(basic)):
             raise HTTPException(status_code=response.status_code, detail=json.loads(response.text)['detail'])
 
 
-@app.get('/docs', status_code=status.HTTP_200_OK, include_in_schema=False)
-@app.get('/docs', status_code=status.HTTP_200_OK)
-async def custom_swagger_ui_html():
-    return get_swagger_ui_html(
-        openapi_url=app.openapi_url,
-        title=APP_TITLE + ' Swagger UI',
-        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-        swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
-        swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
-    )
-
-
-@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
-async def swagger_ui_redirect():
-    return get_swagger_ui_oauth2_redirect_html()
-
-
-@app.get("/redoc", include_in_schema=False)
-async def redoc_html():
-    return get_redoc_html(
-        openapi_url=app.openapi_url,
-        title=app.title + " - ReDoc",
-        redoc_js_url="https://unpkg.com/redoc@next/bundles/redoc.standalone.js",
-    )
-
+config_swagger(app, APP_TITLE)
 
 
 if __name__ == "__main__":
