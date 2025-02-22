@@ -1,5 +1,5 @@
-from requests.structures import CaseInsensitiveDict
 import os
+import src.dependencies.authentification as auth_depends
 from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -7,7 +7,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette import status
 from starlette.requests import Request
 
+from src.app_config import oauth2_scheme
 from src.model.user import User, UserUpdate
+
 
 from dotenv import load_dotenv
 
@@ -21,7 +23,6 @@ else:
 
 from src.errors import Missing, Duplicate, Validation
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 router = APIRouter(prefix="/user")
 
@@ -29,30 +30,18 @@ router = APIRouter(prefix="/user")
 # Эта зависимость создает сообщение в каталоге
 # "/user/token" (из формы с именем пользователя и паролем)
 # и возвращает токен доступа.
-oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
+# oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_dep = oauth2_scheme
 
 
-async def unauthed(detail="Incorrect username or password"):
-    raise HTTPException(
-        status_code=401,
-        detail=detail,
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-
-# К этой конечной точке направляется любой вызов,
-# содержащий зависимость oauth2_dep():
-@router.post("/token")
-async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
-    """Получение имени пользователя и пароля
-    из формы OAuth, возврат токена доступа"""
+async def generate_token_for_user(username: str, password: str):
     try:
-        user = service.auth_user(form_data.username, form_data.password)
+        user = service.auth_user(username, password)
     except Missing as exc:
         raise HTTPException(status_code=404, detail=exc.msg)
     if not user:
-        await unauthed()
-    expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        await auth_depends.unauthed()
+    expires = timedelta(minutes=float(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')))
     access_token = service.create_access_token(
         data={
             "sub": user.name,
@@ -62,15 +51,28 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+
+# К этой конечной точке направляется любой вызов,
+# содержащий зависимость oauth2_dep():
+@router.post("/token")
+async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+    """Получение имени пользователя и пароля
+    из формы OAuth, возврат токена доступа"""
+    return await generate_token_for_user(
+        username=form_data.username,
+        password=form_data.password
+    )
+
+
 # http http://127.0.0.1:8000/user/token  "Authorization: Bearer <token>"
-@router.get("/token", openapi_extra={
-        "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
+@router.get("/token",
+    openapi_extra={
+        # "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
         "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
     }
 )
-async def get_access_token(request: Request, token: str = Depends(oauth2_dep)) -> dict:
+async def get_access_token(request: Request, token: str = Depends(auth_depends.get_token_from_request)) -> dict:
     """Возврат текущего токена доступа"""
-    print("HEADERS: ", request.headers)
     return {"token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)}
 
 
@@ -78,16 +80,15 @@ async def login_required(user_data: dict = Depends(get_access_token)):
     try:
         user = user_data['data']['user']
     except KeyError:
-        await unauthed(
+        await auth_depends.unauthed(
             detail="Not authenticated",
         )
     return user
 
 
 @router.get("/test_jwtauth")
-async def get_test_jwt_auth(request: Request, user = Depends(login_required)):
+async def get_test_jwt_auth(request: Request, user=Depends(login_required)):
     return user
-
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
@@ -107,11 +108,17 @@ async def get_one(name) -> User | None:
 
 @router.post("", status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED) # registration root
 async def create(user: User) -> User:
     try:
         return service.create(user)
     except Duplicate as exc:
         raise HTTPException(status_code=400, detail=exc.msg)
+
+
+@router.post("/login", status_code=status.HTTP_200_OK) # login root
+async def login(token_info: dict = Depends(generate_token_for_user)) -> dict:
+    return token_info
 
 
 @router.patch("", status_code=status.HTTP_200_OK, include_in_schema=False)
