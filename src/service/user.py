@@ -91,7 +91,10 @@ def create_access_token(
     now = datetime.datetime.now(datetime.UTC)
     if not expires:
         expires = datetime.timedelta(minutes=15)
-    src.update({"exp": now + expires})
+    src.update({
+        "exp": now + expires,
+        "iat": now,
+    })
     encoded_jwt = crypt.jwt_encode(src)
     # encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
     print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)

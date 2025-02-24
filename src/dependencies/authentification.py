@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from fastapi import HTTPException, Depends
 from fastapi.security.utils import get_authorization_scheme_param
@@ -41,7 +41,7 @@ async def generate_token_for_user(username: str, password: str):
         data={
             "sub": user.name,
         },
-        expires=expires
+        expires=expires,
     )
     return TokenInfo(access_token=access_token, token_type='bearer')
     # return {"access_token": access_token, "token_type": "bearer"}
