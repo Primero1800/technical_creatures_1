@@ -6,7 +6,7 @@ import jwt
 from src.model.user import User
 from passlib.context import CryptContext
 
-from src.utils.jwt_functions import jwt_decode, jwt_encode
+import src.utils.crypt_functions as crypt
 
 load_dotenv()
 
@@ -16,27 +16,26 @@ else:
     import src.data.user as data
 
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain: str, hash_password: str) -> bool:
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!INSIDE VERIFY_PASSWORD: ', plain, hash_password)
     """Хеширование строки <plain> и сравнение с записью <hash> из базы данных"""
-    return pwd_context.verify(plain, hash_password)
+    # return pwd_context.verify(plain, hash_password)
+    return crypt.verify_hash(plain, hash_password)
 
 
 def get_hash(plain: str) -> str:
     """Возврат хеша строки <plain>"""
-    return pwd_context.hash(plain)
+    # return pwd_context.hash(plain)
+    return crypt.get_hash(plain).decode()
 
 
 def get_jwt_username(token:str) -> dict | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
         # payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        payload = jwt_decode(token)
+        payload = crypt.jwt_decode(token)
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return {}
@@ -93,7 +92,7 @@ def create_access_token(
     if not expires:
         expires = datetime.timedelta(minutes=15)
     src.update({"exp": now + expires})
-    encoded_jwt = jwt_encode(src)
+    encoded_jwt = crypt.jwt_encode(src)
     # encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
     print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)
     return encoded_jwt

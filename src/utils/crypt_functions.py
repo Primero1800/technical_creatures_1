@@ -1,3 +1,4 @@
+import bcrypt
 import jwt
 
 from src.settings import settings
@@ -25,3 +26,14 @@ def jwt_decode(
         key=public_key,
         algorithms=[algorithm],
     )
+
+
+def get_hash(plain: str) -> bytes:
+    return bcrypt.hashpw(
+        password=plain.encode(),
+        salt=bcrypt.gensalt(),
+    )
+
+
+def verify_hash(plain: str, hash_password: str) -> bool:
+    return bcrypt.checkpw(plain.encode(), hash_password.encode())
