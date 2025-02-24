@@ -1,6 +1,6 @@
 import json
 
-from src.errors import Missing
+from src.utils.errors import Missing
 from src.mock.user import _users as mock_users
 from src.test.fixtures.user import (
     sample2, sample_dict, sample_dict_, sample_dict_extended, sample_dict_duplicate,

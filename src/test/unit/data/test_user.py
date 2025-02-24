@@ -1,4 +1,4 @@
-from src.errors import Duplicate, Missing, Validation
+from src.utils.errors import Duplicate, Missing, Validation
 from src.model.user import User
 from src.data import user as data
 

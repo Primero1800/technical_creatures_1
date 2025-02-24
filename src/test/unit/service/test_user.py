@@ -1,4 +1,4 @@
-from src.errors import Missing, Duplicate, Validation
+from src.utils.errors import Missing, Duplicate, Validation
 from src.mock.user import _users as mock_users
 from src.model.user import User
 from src.test.fixtures.user import (

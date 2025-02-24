@@ -4,7 +4,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from src.errors import Missing
+from src.utils.errors import Missing
 from src.mock.creature import _creatures as mock_creatures
 from src.test.fixtures.creature import (
     sample, sample2, sample_dict, sample_dict_, sample_dict_extended, sample_dict_duplicate,

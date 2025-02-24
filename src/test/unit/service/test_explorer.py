@@ -1,4 +1,4 @@
-from src.errors import Missing, Duplicate, Validation
+from src.utils.errors import Missing, Duplicate, Validation
 from src.mock.explorer import _explorers as mock_explorers
 from src.model.explorer import Explorer
 from src.test.fixtures.explorer import (

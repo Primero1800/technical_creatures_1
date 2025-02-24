@@ -1,11 +1,9 @@
-import asyncio
 import json
 
 import pytest
 from fastapi import HTTPException
-from starlette.requests import Request
 
-from src.errors import Missing
+from src.utils.errors import Missing
 from src.service import user as service_user
 from src.mock.user import _sample_users as mock_users
 from src.dependencies import authentification as auth_deps

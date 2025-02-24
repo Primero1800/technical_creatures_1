@@ -1,4 +1,4 @@
-from src.errors import Duplicate, Missing, Validation
+from src.utils.errors import Duplicate, Missing, Validation
 from src.model.creature import Creature
 from src.data import creature as data
 

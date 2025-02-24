@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from starlette import status
 
-from src.errors import Duplicate, Missing, Validation
+from src.utils.errors import Duplicate, Missing, Validation
 from src.model.explorer import Explorer, ExplorerUpdate
 import src.service.explorer as service
 

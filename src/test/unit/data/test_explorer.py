@@ -1,4 +1,4 @@
-from src.errors import Duplicate, Missing, Validation
+from src.utils.errors import Duplicate, Missing, Validation
 from src.model.explorer import Explorer
 from src.data import explorer as data
 
