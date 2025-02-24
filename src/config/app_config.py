@@ -1,8 +1,11 @@
-from typing import Callable, Dict, Any
+import os
+from dotenv import load_dotenv
 
+from typing import Callable, Dict, Any
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from fastapi.security import OAuth2PasswordBearer
+
+load_dotenv()
 
 
 def create_app(docs_url, redoc_url) -> FastAPI:
@@ -13,14 +16,16 @@ def create_app(docs_url, redoc_url) -> FastAPI:
     return app
 
 
+
+
 def get_custom_openapi(subject: FastAPI) -> Callable[[], Dict[str, Any]]:
     def custom_openapi() -> Dict[str, Any]:
         if subject.openapi_schema:
             return subject.openapi_schema
         openapi_schema = get_openapi(
-            title="FastAPI application",
-            version="1.0.0",
-            description="JWT Authentication and Authorization",
+            title=os.getenv('APP_TITLE'),
+            version=os.getenv('APP_VERSION'),
+            description=os.getenv('APP_DESCRIPTION'),
             routes=subject.routes,
         )
         openapi_schema["components"]["securitySchemes"] = {
@@ -44,4 +49,3 @@ def get_custom_openapi(subject: FastAPI) -> Callable[[], Dict[str, Any]]:
         return subject.openapi_schema
 
     return custom_openapi
-

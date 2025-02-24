@@ -8,12 +8,9 @@ from starlette.requests import Request
 
 from src.model.AuthJWT import TokenInfo
 from src.settings import oauth2_scheme
+from src.config.swagger_config import Tags
 from src.model.user import User, UserUpdate
 
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 if os.getenv("FAKE") == str(True):
     print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FAKE SERVICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
@@ -36,7 +33,7 @@ oauth2_dep = oauth2_scheme
 
 # К этой конечной точке направляется любой вызов,
 # содержащий зависимость oauth2_dep():
-@router.post("/token", response_model=TokenInfo)
+@router.post("/token", response_model=TokenInfo, tags=[Tags.AUTH_TAG,])
 async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
@@ -51,14 +48,15 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
     openapi_extra={
         # "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
         "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
-    }
+    },
+    tags=[Tags.AUTH_TAG,]
 )
 async def get_access_token(request: Request, token: str = Depends(auth_depends.get_token_from_request)) -> dict:
     """Возврат текущего токена доступа"""
     return {"token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)}
 
 
-@router.get("/test_jwtauth")
+@router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])
 async def get_test_jwt_auth(user=Depends(auth_depends.login_required)):
     return user
 
@@ -80,7 +78,7 @@ async def get_one(name) -> User | None:
 
 @router.post("", status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", status_code=status.HTTP_201_CREATED)
-@router.post("/register", status_code=status.HTTP_201_CREATED) # registration root
+@router.post("/register", status_code=status.HTTP_201_CREATED, tags=[Tags.AUTH_TAG]) # registration root
 async def create(user: User) -> User:
     try:
         return service.create(user)
@@ -88,7 +86,11 @@ async def create(user: User) -> User:
         raise HTTPException(status_code=400, detail=exc.msg)
 
 
-@router.post("/login", status_code=status.HTTP_200_OK, response_model=TokenInfo) # login root
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=TokenInfo,
+    tags=[Tags.AUTH_TAG,]) # login root
 async def login(token_info: TokenInfo = Depends(auth_depends.generate_token_for_user)) -> TokenInfo:
     return token_info
 
