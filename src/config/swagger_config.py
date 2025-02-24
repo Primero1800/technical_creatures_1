@@ -8,14 +8,28 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class Tags:
     AUTH_TAG = os.getenv('AUTH_TAG')
+    AUTH_TAG_DESCRIPTION = os.getenv('AUTH_TAG_DESCRIPTION')
+
     TECH_TAG = os.getenv('TECH_TAG')
+    TECH_TAG_DESCRIPTION = os.getenv('TECH_TAG_DESCRIPTION')
+
     USER_TAG = os.getenv('USER_TAG')
+    USER_TAG_DESCRIPTION = os.getenv('USER_TAG_DESCRIPTION')
+
     CREATURE_TAG = os.getenv('CREATURE_TAG')
+    CREATURE_TAG_DESCRIPTION = os.getenv('CREATURE_TAG_DESCRIPTION')
+
     EXPLORER_TAG = os.getenv('EXPLORER_TAG')
+    EXPLORER_TAG_DESCRIPTION = os.getenv('EXPLORER_DESCRIPTION')
+
     ROOT_TAG = os.getenv('ROOT_TAG')
+    ROOT_TAG_DESCRIPTION = os.getenv('ROOT_TAG_DESCRIPTION')
+
     SWAGGER_TAG = os.getenv('SWAGGER_TAG')
+    SWAGGER_TAG_DESCRIPTION = os.getenv('SWAGGER_TAG_DESCRIPTION')
 
 
 async def get_routes(application: FastAPI, path=True, tags=True, methods=True, ):
