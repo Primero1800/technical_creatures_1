@@ -45,5 +45,3 @@ def get_custom_openapi(subject: FastAPI) -> Callable[[], Dict[str, Any]]:
 
     return custom_openapi
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

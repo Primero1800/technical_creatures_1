@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 from starlette.requests import Request
 
-from src.config.app_config import oauth2_scheme
+from src.settings import oauth2_scheme
 from src.model.user import User, UserUpdate
 
 

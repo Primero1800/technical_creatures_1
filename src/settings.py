@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from fastapi.security import OAuth2PasswordBearer
 from pydantic.v1 import BaseSettings
 from src.model.AuthJWT import AuthJWT
 
@@ -14,5 +15,7 @@ class Settings(BaseSettings):
         algorithm="RS256",
     )
 
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 settings = Settings()
