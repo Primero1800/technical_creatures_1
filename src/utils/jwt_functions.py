@@ -21,7 +21,7 @@ def jwt_decode(
         algorithm: str = settings.auth_jwt.algorithm,
 ):
     return jwt.decode(
-        token=token,
+        jwt=token,
         key=public_key,
         algorithms=[algorithm],
     )

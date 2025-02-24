@@ -35,8 +35,8 @@ def get_hash(plain: str) -> str:
 def get_jwt_username(token:str) -> dict | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # payload = jwt_decode(token)
+        # payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt_decode(token)
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return {}
@@ -93,8 +93,8 @@ def create_access_token(
     if not expires:
         expires = datetime.timedelta(minutes=15)
     src.update({"exp": now + expires})
-    # encoded_jwt = jwt_encode(src)
-    encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt_encode(src)
+    # encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
     print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)
     return encoded_jwt
 
