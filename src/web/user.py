@@ -20,7 +20,7 @@ if os.getenv("FAKE") == str(True):
 else:
     import src.service.user as service
 
-from src.errors import Missing, Duplicate, Validation
+from src.utils.errors import Missing, Duplicate, Validation
 
 
 router = APIRouter(prefix="/user")
@@ -31,7 +31,6 @@ router = APIRouter(prefix="/user")
 # и возвращает токен доступа.
 # oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
 oauth2_dep = oauth2_scheme
-
 
 
 # К этой конечной точке направляется любой вызов,

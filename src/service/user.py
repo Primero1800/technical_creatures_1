@@ -1,9 +1,12 @@
 import os
 import datetime
 from dotenv import load_dotenv
-from jose import jwt
+# from jose import jwt
+import jwt
 from src.model.user import User
 from passlib.context import CryptContext
+
+from src.utils.jwt_functions import jwt_decode, jwt_encode
 
 load_dotenv()
 
@@ -33,12 +36,14 @@ def get_jwt_username(token:str) -> dict | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # payload = jwt_decode(token)
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return {}
         if not (expires := payload.get('exp')):
             return {}
-    except jwt.JWTError:
+    # except jwt.JWTError:
+    except jwt.PyJWTError:
         print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!!')
         return {}
     return {
@@ -88,6 +93,7 @@ def create_access_token(
     if not expires:
         expires = datetime.timedelta(minutes=15)
     src.update({"exp": now + expires})
+    # encoded_jwt = jwt_encode(src)
     encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
     print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)
     return encoded_jwt
