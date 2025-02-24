@@ -6,7 +6,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from starlette import status
 from starlette.requests import Request
 
-from src.errors import Missing
+from src.utils.errors import Missing
 from src.service import user as service_user
 
 

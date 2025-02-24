@@ -3,11 +3,6 @@ import os
 
 import httpx
 from fastapi import Depends, HTTPException
-from fastapi.openapi.docs import (
-    get_redoc_html,
-    get_swagger_ui_html,
-    get_swagger_ui_oauth2_redirect_html,
-)
 from fastapi.security import HTTPBasicCredentials
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
@@ -19,7 +14,7 @@ from src.config.swagger_config import config_swagger
 from src.auth import basic
 from src.web import explorer, creature, user
 
-from src.utils import init_otel
+from src.utils.utils import init_otel
 
 
 init_otel()
