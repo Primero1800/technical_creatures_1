@@ -6,6 +6,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from starlette import status
 from starlette.requests import Request
 
+from src.model.AuthJWT import TokenInfo
 from src.utils.errors import Missing
 from src.service import user as service_user
 
@@ -42,7 +43,8 @@ async def generate_token_for_user(username: str, password: str):
         },
         expires=expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return TokenInfo(access_token=access_token, token_type='bearer')
+    # return {"access_token": access_token, "token_type": "bearer"}
 
 
 async def login_required(token: str = Depends(get_token_from_request)) -> dict:

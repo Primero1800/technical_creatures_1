@@ -3,6 +3,7 @@ import json
 import pytest
 from fastapi import HTTPException
 
+from src.model.AuthJWT import TokenInfo
 from src.utils.errors import Missing
 from src.service import user as service_user
 from src.mock.user import _sample_users as mock_users
@@ -30,10 +31,10 @@ def test_create_user_success(test_client, sample):
 async def test_generate_token_for_user_mocked(mocker):
     mock = mocker.patch.object(service_user, 'auth_user', return_value=USER1)
     result = await auth_deps.generate_token_for_user(USER1.name, USER1.hash)
-    assert isinstance(result, dict)
-    assert result['token_type'] == 'bearer'
-    assert 'access_token' in result.keys()
-    TEST_TOKENS.append(result['access_token'])
+    assert isinstance(result, TokenInfo)
+    assert result.token_type == 'bearer'
+    assert result.access_token is not None
+    TEST_TOKENS.append(result.access_token)
 
 
 @pytest.mark.asyncio
@@ -65,10 +66,10 @@ async def test_generate_token_for_user_bad_password_mocked(mocker):
 @pytest.mark.asyncio
 async def test_generate_token_for_user(sample, test_client):
     result = await auth_deps.generate_token_for_user(USER1.name, USER1.hash)
-    assert isinstance(result, dict)
-    assert result['token_type'] == 'bearer'
-    assert 'access_token' in result.keys()
-    TEST_TOKENS.append(result['access_token'])
+    assert isinstance(result, TokenInfo)
+    assert result.token_type == 'bearer'
+    assert result.access_token is not None
+    TEST_TOKENS.append(result.access_token)
 
 
 @pytest.mark.asyncio

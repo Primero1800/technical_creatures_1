@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 # from jose import jwt
 import jwt
 from src.model.user import User
-from passlib.context import CryptContext
+# from passlib.context import CryptContext
 
 import src.utils.crypt_functions as crypt
 
@@ -16,7 +16,7 @@ else:
     import src.data.user as data
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain: str, hash_password: str) -> bool:

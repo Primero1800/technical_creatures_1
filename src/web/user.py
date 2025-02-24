@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 from starlette.requests import Request
 
+from src.model.AuthJWT import TokenInfo
 from src.settings import oauth2_scheme
 from src.model.user import User, UserUpdate
 
@@ -35,7 +36,7 @@ oauth2_dep = oauth2_scheme
 
 # К этой конечной точке направляется любой вызов,
 # содержащий зависимость oauth2_dep():
-@router.post("/token")
+@router.post("/token", response_model=TokenInfo)
 async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
@@ -87,8 +88,8 @@ async def create(user: User) -> User:
         raise HTTPException(status_code=400, detail=exc.msg)
 
 
-@router.post("/login", status_code=status.HTTP_200_OK) # login root
-async def login(token_info: dict = Depends(auth_depends.generate_token_for_user)) -> dict:
+@router.post("/login", status_code=status.HTTP_200_OK, response_model=TokenInfo) # login root
+async def login(token_info: TokenInfo = Depends(auth_depends.generate_token_for_user)) -> TokenInfo:
     return token_info
 
 
