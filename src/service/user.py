@@ -42,13 +42,15 @@ def get_jwt_username(token_cred:str) -> dict | None:
             return {}
         if not (expires := payload.get('exp')):
             return {}
+        iat = payload.get('iat', None)
     # except jwt.JWTError:
     except jwt.PyJWTError as error:
         print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!! ', error)
-        return {}
+        raise error
     return {
         'username': username,
         'expires': expires,
+        'login_at': iat
     }
 
 
@@ -57,13 +59,14 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
         token_cred = token_cred.credentials
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
     jwt_info = get_jwt_username(token_cred)
-    if not jwt_info or not isinstance(jwt_info, dict):
-        return {}
+    # if not jwt_info or not isinstance(jwt_info, dict):
+    #     return {}
     username = jwt_info.get('username', None)
     if user := lookup_user(username):
         return {
             'user': user,
-            'expires': jwt_info.get('expires', None)
+            'expires': jwt_info.get('expires'),
+            'iat': jwt_info.get('iat'),
         }
     return {}
 

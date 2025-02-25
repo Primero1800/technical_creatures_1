@@ -1,3 +1,5 @@
+import jwt
+
 from src.utils.errors import Missing, Duplicate, Validation
 from src.mock.user import _users as mock_users
 from src.model.user import User
@@ -162,8 +164,11 @@ def test_service_get_jwt_username_bad(sample):
 
 
 def test_service_get_jwt_username_noname():
-    username = (code.get_jwt_username(TEST_TOKENS[2])).get('username', None)
-    assert username is None
+    try:
+        username = (code.get_jwt_username(TEST_TOKENS[2])).get('username', None)
+    except jwt.PyJWTError as error:
+        username = str(error)
+    assert username == 'Not enough segments'
 
 
 def test_service_get_current_user(sample):
@@ -189,7 +194,9 @@ def test_service_get_current_user_noname(sample):
         user = code.get_current_user(TEST_TOKENS[2])
     except Missing as exc:
         user = exc.msg
-    assert user == {}
+    except jwt.PyJWTError as error:
+        user = str(error)
+    assert user == 'Not enough segments'
 
 
 def test_service_user_get_one(sample):

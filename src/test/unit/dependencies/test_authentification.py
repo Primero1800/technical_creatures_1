@@ -151,7 +151,7 @@ async def test_login_required_bad(sample):
     except HTTPException as exc:
         result = exc
     assert result.status_code == 401
-    assert result.detail == 'Not authenticated'
+    assert result.detail.startswith('Not authenticated')
 
 
 

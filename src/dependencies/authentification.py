@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta, datetime
 
+import jwt
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security.utils import get_authorization_scheme_param
@@ -52,8 +53,8 @@ async def login_required(token: HTTPAuthorizationCredentials | str = Depends(HTT
     try:
         user_dict = service_user.get_current_user(token)
         user = user_dict['user']
-    except KeyError:
+    except (KeyError, jwt.PyJWTError) as error:
         await unauthed(
-            detail="Not authenticated",
+            detail=f"Not authenticated, {error}",
         )
     return user

@@ -1,4 +1,7 @@
 import os
+
+import jwt
+
 import src.dependencies.authentification as auth_depends
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -50,9 +53,12 @@ async def get_access_token(
         token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)
 ) -> dict:
     """Возврат текущего токена доступа"""
-    return {
-        "token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)
-    }
+    try:
+        return {
+            "token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)
+        }
+    except jwt.PyJWTError as error:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(error))
 
 
 @router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])

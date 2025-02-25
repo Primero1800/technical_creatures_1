@@ -117,19 +117,18 @@ def test_get_access_token(test_client, sample):
     )
     assert response.status_code == 200
     response_text = json.loads(response.text)
-    assert response_text['user']['name'] == sample.name
+    assert response_text['data']['user']['name'] == sample.name
 
 
-def test_get_access_token(test_client):
+def test_get_access_token_bad(test_client):
     response = test_client.get(
         "/user/token",
         headers={
             "Authorization": TEST_TOKENS[1],
         }
     )
-    assert response.status_code == 200
-    response_text = json.loads(response.text)
-    assert response_text['data'] == {}
+    assert response.status_code == 401
+    assert json.loads(response.text) == {"detail": f"Not enough segments"}
 
 
 def test_get_one_success(test_client, sample):
