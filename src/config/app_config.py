@@ -19,8 +19,6 @@ def create_app(docs_url, redoc_url) -> FastAPI:
     return app
 
 
-
-
 def get_custom_openapi(subject: FastAPI) -> Callable[[], Dict[str, Any]]:
     def custom_openapi() -> Dict[str, Any]:
         if subject.openapi_schema:
@@ -31,23 +29,6 @@ def get_custom_openapi(subject: FastAPI) -> Callable[[], Dict[str, Any]]:
             description=os.getenv('APP_DESCRIPTION'),
             routes=subject.routes,
         )
-
-        openapi_schema["components"]["securitySchemes"] = {
-            "BearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            },
-            # "BasicAuth": {
-            #     "type": "http",
-            #     "scheme": "basic"
-            # },
-        }
-
-        openapi_schema["security"] = [
-            {"BearerAuth": []},
-            # {"BasicAuth": []}
-        ]
 
         subject.openapi_schema = openapi_schema
         return subject.openapi_schema
