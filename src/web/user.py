@@ -63,7 +63,10 @@ async def get_access_token(
 
 @router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])
 async def get_test_jwt_auth(user=Depends(auth_depends.login_required)):
-    return user
+    try:
+        return user
+    except jwt.PyJWTError:
+        raise
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
