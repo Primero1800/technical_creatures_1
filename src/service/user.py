@@ -58,7 +58,7 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
 
     if jwt_info[settings.auth_jwt.token_type_field] != settings.auth_jwt.access_token_type:
         raise JWTError(
-            msg=f"Invalid token type, need '{settings.auth_jwt.access_token_type}'",
+            msg=f"Invalid token type '{jwt_info[settings.auth_jwt.token_type_field]}', need '{settings.auth_jwt.access_token_type}'",
         )
 
     username = jwt_info.get('username', None)
