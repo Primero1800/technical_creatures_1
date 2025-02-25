@@ -2,6 +2,7 @@ import os
 from datetime import timedelta, datetime
 
 from fastapi import HTTPException, Depends
+from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette import status
 from starlette.requests import Request
@@ -9,6 +10,7 @@ from starlette.requests import Request
 from src.model.AuthJWT import TokenInfo
 from src.utils.errors import Missing
 from src.service import user as service_user
+from src.settings import HTTP_BEARER
 
 
 async def unauthed(detail="Incorrect username or password"):
@@ -44,13 +46,11 @@ async def generate_token_for_user(username: str, password: str):
         expires=expires,
     )
     return TokenInfo(access_token=access_token, token_type='bearer')
-    # return {"access_token": access_token, "token_type": "bearer"}
 
 
-async def login_required(token: str = Depends(get_token_from_request)) -> dict:
+async def login_required(token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)) -> dict:
     try:
         user_dict = service_user.get_current_user(token)
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! USER_DICT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', user_dict)
         user = user_dict['user']
     except KeyError:
         await unauthed(
