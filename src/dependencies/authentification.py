@@ -11,10 +11,7 @@ from starlette.requests import Request
 from src.model.AuthJWT import TokenInfo
 from src.utils.errors import Missing
 from src.service import user as service_user
-from src.settings import oauth2_scheme
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.settings import settings, oauth2_scheme
 
 
 async def unauthed(detail="Incorrect username or password"):
@@ -42,14 +39,19 @@ async def generate_token_for_user(username: str = Form(), password: str = Form()
         raise HTTPException(status_code=404, detail=exc.msg)
     if not user:
         await unauthed()
-    expires = timedelta(minutes=float(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')))
     access_token = service_user.create_access_token(
-        data={
-            "sub": user.name,
-        },
-        expires=expires,
+        data={"sub": user.name},
+        expires=timedelta(minutes=settings.auth_jwt.access_token_expire_minutes),
     )
-    return TokenInfo(access_token=access_token, token_type='bearer')
+    refresh_token = service_user.create_access_token(
+        data={'sub': user.name},
+        expires=timedelta(minutes=settings.auth_jwt.refresh_token_expire_minutes),
+        token_type=settings.auth_jwt.refresh_token_type,
+    )
+    return TokenInfo(
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
 
 
 async def login_required(
@@ -59,7 +61,11 @@ async def login_required(
     try:
         user_dict = service_user.get_current_user(token)
         user = user_dict['user']
-    except (KeyError, jwt.PyJWTError) as error:
+    except KeyError:
+        await unauthed(
+            detail=f"Not authenticated",
+        )
+    except jwt.PyJWTError as error:
         await unauthed(
             detail=f"Not authenticated, {error}",
         )

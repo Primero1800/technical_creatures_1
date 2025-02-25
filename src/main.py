@@ -9,6 +9,7 @@ from opentelemetry.instrumentation.fastapi import  FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from starlette import status
 
+from src import settings
 from src.config.app_config import create_app, get_custom_openapi
 from src.config.swagger_config import config_swagger, Tags, get_routes, delete_router_tag
 from src.auth import basic
@@ -31,9 +32,10 @@ app = create_app(
 
 app.openapi = get_custom_openapi(app)
 
-app.include_router(user.router, tags=[Tags.USER_TAG,])
-app.include_router(creature.router, tags=[Tags.CREATURE_TAG,])
-app.include_router(explorer.router, tags=[Tags.EXPLORER_TAG,])
+app.include_router(user.router, tags=[Tags.USER_TAG,], dependencies=[Depends(settings.HTTP_BEARER),])
+app.include_router(creature.router, tags=[Tags.CREATURE_TAG,], dependencies=[Depends(settings.HTTP_BEARER),])
+app.include_router(explorer.router, tags=[Tags.EXPLORER_TAG,], dependencies=[Depends(settings.HTTP_BEARER),])
+
 delete_router_tag(app)
 
 

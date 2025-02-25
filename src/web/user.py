@@ -28,7 +28,7 @@ router = APIRouter(prefix="/user")
 
 
 @router.post("/token", response_model=TokenInfo, tags=[Tags.AUTH_TAG,])
-async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+async def create_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
     из формы OAuth, возврат токена доступа"""
     return await auth_depends.generate_token_for_user(
@@ -61,10 +61,7 @@ async def get_access_token(
 
 @router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])
 async def get_test_jwt_auth(user=Depends(auth_depends.login_required)):
-    try:
-        return user
-    except jwt.PyJWTError:
-        raise
+    return user
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)

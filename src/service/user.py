@@ -1,6 +1,5 @@
 import os
 import datetime
-from dotenv import load_dotenv
 # from jose import jwt
 import jwt
 from fastapi.security import HTTPAuthorizationCredentials
@@ -9,8 +8,8 @@ from src.model.user import User
 # from passlib.context import CryptContext
 
 import src.utils.crypt_functions as crypt
+from src.settings import settings
 
-load_dotenv()
 
 if os.getenv('FAKE') == str(True):
     import src.mock.user as data
@@ -55,8 +54,10 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
     jwt_info = get_jwt_username(token_cred)
     print("!!!!!!!!!!!!!!!! JWT INFO !!!!!!!!!!!!!!!!!!!", jwt_info)
-    # if not jwt_info or not isinstance(jwt_info, dict):
-    #     return {}
+
+    if jwt_info[settings.auth_jwt.token_type_field] != settings.auth_jwt.access_token_type:
+        return {}
+
     username = jwt_info.get('username', None)
     result = {}
     if user := lookup_user(username):
@@ -84,8 +85,9 @@ def auth_user(name: str, plain: str) -> User | None:
 
 def create_access_token(
         data: dict,
-        expires: datetime.timedelta | None = None
-):
+        expires: datetime.timedelta | None = None,
+        token_type: str | None = settings.auth_jwt.access_token_type,
+) -> str:
     """Возвращение токена доступа JWT"""
     src = data.copy()
     now = datetime.datetime.now(datetime.UTC)
@@ -94,9 +96,9 @@ def create_access_token(
     src.update({
         "exp": now + expires,
         "iat": now,
+        settings.auth_jwt.token_type_field: token_type,
     })
     encoded_jwt = crypt.jwt_encode(src)
-    print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)
     return encoded_jwt
 
 
