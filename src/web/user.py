@@ -10,7 +10,7 @@ from starlette import status
 from starlette.requests import Request
 
 from src.model.AuthJWT import TokenInfo
-from src.settings import oauth2_scheme, HTTP_BEARER
+from src.settings import oauth2_scheme
 from src.config.swagger_config import Tags
 from src.model.user import User, UserUpdate
 
@@ -25,9 +25,6 @@ from src.utils.errors import Missing, Duplicate, Validation
 
 
 router = APIRouter(prefix="/user")
-
-# oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
-oauth2_dep = oauth2_scheme
 
 
 @router.post("/token", response_model=TokenInfo, tags=[Tags.AUTH_TAG,])
@@ -50,7 +47,8 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
 )
 async def get_access_token(
         request: Request,
-        token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)
+        # token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)
+        token: str = Depends(oauth2_scheme)
 ) -> dict:
     """Возврат текущего токена доступа"""
     try:

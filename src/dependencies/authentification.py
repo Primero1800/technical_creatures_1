@@ -2,7 +2,7 @@ import os
 from datetime import timedelta, datetime
 
 import jwt
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Form
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette import status
@@ -11,7 +11,10 @@ from starlette.requests import Request
 from src.model.AuthJWT import TokenInfo
 from src.utils.errors import Missing
 from src.service import user as service_user
-from src.settings import HTTP_BEARER
+from src.settings import oauth2_scheme
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 async def unauthed(detail="Incorrect username or password"):
@@ -32,7 +35,7 @@ async def get_token_from_request(request: Request):
     return param
 
 
-async def generate_token_for_user(username: str, password: str):
+async def generate_token_for_user(username: str = Form(), password: str = Form()):
     try:
         user = service_user.auth_user(username, password)
     except Missing as exc:
@@ -49,7 +52,10 @@ async def generate_token_for_user(username: str, password: str):
     return TokenInfo(access_token=access_token, token_type='bearer')
 
 
-async def login_required(token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)) -> dict:
+async def login_required(
+        # token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)
+        token: str = Depends(oauth2_scheme)
+) -> dict:
     try:
         user_dict = service_user.get_current_user(token)
         user = user_dict['user']

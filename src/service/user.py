@@ -50,7 +50,7 @@ def get_jwt_username(token_cred:str) -> dict | None:
     return {
         'username': username,
         'expires': expires,
-        'login_at': iat
+        'iat': iat
     }
 
 
@@ -59,6 +59,7 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
         token_cred = token_cred.credentials
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
     jwt_info = get_jwt_username(token_cred)
+    print("!!!!!!!!!!!!!!!! JWT INFO !!!!!!!!!!!!!!!!!!!", jwt_info)
     # if not jwt_info or not isinstance(jwt_info, dict):
     #     return {}
     username = jwt_info.get('username', None)
@@ -66,7 +67,7 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
         return {
             'user': user,
             'expires': jwt_info.get('expires'),
-            'iat': jwt_info.get('iat'),
+            'login_at': jwt_info.get('iat'),
         }
     return {}
 

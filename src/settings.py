@@ -16,7 +16,8 @@ class Settings(BaseSettings):
     )
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-HTTP_BEARER = HTTPBearer()
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# HTTP_BEARER = HTTPBearer()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
 settings = Settings()
