@@ -17,14 +17,14 @@ def jwt_encode(
 
 
 def jwt_decode(
-        token: str | bytes,
+        token_cred: str | bytes,
         public_key: str = settings.auth_jwt.public_key.read_text(),
         algorithm: str = settings.auth_jwt.algorithm,
 ):
     return jwt.decode(
-        jwt=token,
+        jwt=token_cred,
         key=public_key,
-        algorithms=[algorithm],
+        algorithms=[algorithm,],
     )
 
 
