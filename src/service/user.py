@@ -3,6 +3,8 @@ import datetime
 from dotenv import load_dotenv
 # from jose import jwt
 import jwt
+from fastapi.security import HTTPAuthorizationCredentials
+
 from src.model.user import User
 # from passlib.context import CryptContext
 
@@ -14,7 +16,6 @@ if os.getenv('FAKE') == str(True):
     import src.mock.user as data
 else:
     import src.data.user as data
-
 
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -31,19 +32,19 @@ def get_hash(plain: str) -> str:
     return crypt.get_hash(plain).decode()
 
 
-def get_jwt_username(token:str) -> dict | None:
+def get_jwt_username(token_cred:str) -> dict | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
         # payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        payload = crypt.jwt_decode(token)
+        payload = crypt.jwt_decode(token_cred=token_cred)
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return {}
         if not (expires := payload.get('exp')):
             return {}
     # except jwt.JWTError:
-    except jwt.PyJWTError:
-        print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    except jwt.PyJWTError as error:
+        print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!! ', error)
         return {}
     return {
         'username': username,
@@ -51,10 +52,11 @@ def get_jwt_username(token:str) -> dict | None:
     }
 
 
-def get_current_user(token: str) -> dict | None:
-    print('GET_CURRENT_USER ', token)
+def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | None:
+    if isinstance(token_cred, HTTPAuthorizationCredentials):
+        token_cred = token_cred.credentials
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
-    jwt_info = get_jwt_username(token)
+    jwt_info = get_jwt_username(token_cred)
     if not jwt_info or not isinstance(jwt_info, dict):
         return {}
     username = jwt_info.get('username', None)

@@ -2,12 +2,12 @@ import os
 import src.dependencies.authentification as auth_depends
 
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials
 from starlette import status
 from starlette.requests import Request
 
 from src.model.AuthJWT import TokenInfo
-from src.settings import oauth2_scheme
+from src.settings import oauth2_scheme, HTTP_BEARER
 from src.config.swagger_config import Tags
 from src.model.user import User, UserUpdate
 
@@ -23,16 +23,10 @@ from src.utils.errors import Missing, Duplicate, Validation
 
 router = APIRouter(prefix="/user")
 
-# --- Новые данные auth
-# Эта зависимость создает сообщение в каталоге
-# "/user/token" (из формы с именем пользователя и паролем)
-# и возвращает токен доступа.
 # oauth2_dep = OAuth2PasswordBearer(tokenUrl="token")
 oauth2_dep = oauth2_scheme
 
 
-# К этой конечной точке направляется любой вызов,
-# содержащий зависимость oauth2_dep():
 @router.post("/token", response_model=TokenInfo, tags=[Tags.AUTH_TAG,])
 async def create_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Получение имени пользователя и пароля
@@ -46,14 +40,19 @@ async def create_access_token(request: Request, form_data: OAuth2PasswordRequest
 # http http://127.0.0.1:8000/user/token  "Authorization: Bearer <token>"
 @router.get("/token",
     openapi_extra={
-        # "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
+        "security": [{"bearerAuth": []}],  # Используем схему "bearerAuth"
         "description": "Возврат текущего токена доступа.  Требуется заголовок Authorization: Bearer <token>",
     },
     tags=[Tags.AUTH_TAG,]
 )
-async def get_access_token(request: Request, token: str = Depends(auth_depends.get_token_from_request)) -> dict:
+async def get_access_token(
+        request: Request,
+        token: HTTPAuthorizationCredentials | str = Depends(HTTP_BEARER)
+) -> dict:
     """Возврат текущего токена доступа"""
-    return {"token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)}
+    return {
+        "token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)
+    }
 
 
 @router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])
