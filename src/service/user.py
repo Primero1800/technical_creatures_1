@@ -40,18 +40,13 @@ def get_jwt_username(token_cred:str) -> dict | None:
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return {}
-        if not (expires := payload.get('exp')):
-            return {}
-        iat = payload.get('iat', None)
     # except jwt.JWTError:
     except jwt.PyJWTError as error:
         print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!! ', error)
         raise error
-    return {
-        'username': username,
-        'expires': expires,
-        'iat': iat
-    }
+    result = {'username': username}
+    del payload['sub']
+    return {**result, **payload}
 
 
 def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | None:
@@ -63,13 +58,12 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
     # if not jwt_info or not isinstance(jwt_info, dict):
     #     return {}
     username = jwt_info.get('username', None)
+    result = {}
     if user := lookup_user(username):
-        return {
-            'user': user,
-            'expires': jwt_info.get('expires'),
-            'login_at': jwt_info.get('iat'),
-        }
-    return {}
+        result['user'] = user
+        del jwt_info['username']
+        result.update(jwt_info)
+    return result
 
 
 def lookup_user(username: str) -> User | None:
@@ -102,7 +96,6 @@ def create_access_token(
         "iat": now,
     })
     encoded_jwt = crypt.jwt_encode(src)
-    # encoded_jwt = jwt.encode(src, SECRET_KEY, algorithm=ALGORITHM)
     print('-------------------------------------------------------------- ENCODED JWT --------------------------------------------------', encoded_jwt)
     return encoded_jwt
 
