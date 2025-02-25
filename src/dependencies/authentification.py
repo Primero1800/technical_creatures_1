@@ -66,7 +66,8 @@ async def login_required(
             detail=f"Not authenticated",
         )
     except jwt.PyJWTError as error:
+        detail = error.msg if hasattr(error, 'msg') else f"Not authenticated, {error}"
         await unauthed(
-            detail=f"Not authenticated, {error}",
+            detail=detail,
         )
     return user

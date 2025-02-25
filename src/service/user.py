@@ -3,13 +3,14 @@ import datetime
 # from jose import jwt
 import jwt
 from fastapi.security import HTTPAuthorizationCredentials
+from jwt import PyJWTError
 
 from src.model.user import User
 # from passlib.context import CryptContext
 
 import src.utils.crypt_functions as crypt
 from src.settings import settings
-
+from src.utils.errors import JWTError
 
 if os.getenv('FAKE') == str(True):
     import src.mock.user as data
@@ -56,7 +57,9 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
     print("!!!!!!!!!!!!!!!! JWT INFO !!!!!!!!!!!!!!!!!!!", jwt_info)
 
     if jwt_info[settings.auth_jwt.token_type_field] != settings.auth_jwt.access_token_type:
-        return {}
+        raise JWTError(
+            msg=f"Invalid token type, need '{settings.auth_jwt.access_token_type}'",
+        )
 
     username = jwt_info.get('username', None)
     result = {}

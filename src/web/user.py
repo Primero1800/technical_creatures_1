@@ -56,7 +56,8 @@ async def get_access_token(
             "token": token, 'data': service.get_current_user(token), 'headers': dict(request.headers)
         }
     except jwt.PyJWTError as error:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(error))
+        detail = error.msg if hasattr(error, 'msg') else f"{error}"
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
 @router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])
