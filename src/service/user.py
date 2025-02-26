@@ -1,5 +1,7 @@
 import os
 import datetime
+import uuid
+
 # from jose import jwt
 import jwt
 from fastapi.security import HTTPAuthorizationCredentials
@@ -32,34 +34,39 @@ def get_hash(plain: str) -> str:
     return crypt.get_hash(plain).decode()
 
 
-def get_jwt_username(token_cred:str) -> dict | None:
+def get_jwt_username(token_cred: str) -> dict | None:
     """Возврат имени пользователя из JWT-доступа <token>"""
     try:
-        # payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         payload = crypt.jwt_decode(token_cred=token_cred)
         print('!!!!!!!!!!!!! PAYLOAD !!!!!!!!!!!!!!!', payload)
         if not (username := payload.get("sub")):
             return {}
     # except jwt.JWTError:
     except jwt.PyJWTError as error:
-        print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!! ', error)
-        raise error
+        print('!!!!!!!!!!!!!!!!!!!!!!! JWT Error !!!!!!!!!!!!!!!!!!!!!!!!!!! ', str(error))
+        raise JWTError(msg=str(error))
+
     result = {'username': username}
     del payload['sub']
     return {**result, **payload}
 
 
-def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | None:
+def get_current_user(
+        token_cred: str | HTTPAuthorizationCredentials,
+        need_access_token: bool = True,
+        need_token_type_validation: bool = True,
+) -> dict | None:
     if isinstance(token_cred, HTTPAuthorizationCredentials):
         token_cred = token_cred.credentials
     """Декодирование токена <token> доступа OAuth и возврат объекта User"""
     jwt_info = get_jwt_username(token_cred)
     print("!!!!!!!!!!!!!!!! JWT INFO !!!!!!!!!!!!!!!!!!!", jwt_info)
 
-    if jwt_info[settings.auth_jwt.token_type_field] != settings.auth_jwt.access_token_type:
-        raise JWTError(
-            msg=f"Invalid token type '{jwt_info[settings.auth_jwt.token_type_field]}', need '{settings.auth_jwt.access_token_type}'",
-        )
+    if need_token_type_validation:
+        try:
+            token_type_validation(jwt_data=jwt_info, need_access=need_access_token)
+        except JWTError:
+            raise
 
     username = jwt_info.get('username', None)
     result = {}
@@ -68,6 +75,19 @@ def get_current_user(token_cred: str | HTTPAuthorizationCredentials) -> dict | N
         del jwt_info['username']
         result.update(jwt_info)
     return result
+
+
+def token_type_validation(jwt_data: dict, need_access: bool = True):
+    if need_access:
+        if jwt_data[settings.auth_jwt.token_type_field] != settings.auth_jwt.access_token_type:
+            raise JWTError(
+                msg=f"Invalid token type '{jwt_data[settings.auth_jwt.token_type_field]}', need '{settings.auth_jwt.access_token_type}'",
+            )
+    else:
+        if jwt_data[settings.auth_jwt.token_type_field] != settings.auth_jwt.refresh_token_type:
+            raise JWTError(
+                msg=f"Invalid token type '{jwt_data[settings.auth_jwt.token_type_field]}', need '{settings.auth_jwt.refresh_token_type}'",
+            )
 
 
 def lookup_user(username: str) -> User | None:
@@ -99,6 +119,7 @@ def create_access_token(
     src.update({
         "exp": now + expires,
         "iat": now,
+        'id': str(uuid.uuid4()),
         settings.auth_jwt.token_type_field: token_type,
     })
     encoded_jwt = crypt.jwt_encode(src)

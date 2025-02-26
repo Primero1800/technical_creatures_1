@@ -1,5 +1,5 @@
 import jwt
-
+from src.settings import settings
 from src.utils.errors import Missing, Duplicate, Validation, JWTError
 from src.mock.user import _users as mock_users
 from src.model.user import User
@@ -169,6 +169,63 @@ def test_service_get_jwt_username_noname():
     except JWTError as exc:
         username = exc.msg
     assert username == 'Not enough segments'
+
+
+def test_token_type_validation():
+    jwt_data = {
+        settings.auth_jwt.token_type_field: settings.auth_jwt.access_token_type
+    }
+    try:
+        code.token_type_validation(jwt_data=jwt_data)
+        result = True
+    except JWTError as exc:
+        result = exc.msg
+    assert result
+
+
+def test_token_type_validation_error():
+    jwt_data = {
+        settings.auth_jwt.token_type_field: settings.auth_jwt.refresh_token_type
+    }
+    try:
+        code.token_type_validation(jwt_data=jwt_data)
+    except JWTError as exc:
+        result = exc.msg
+    assert result.startswith("Invalid token type")
+
+
+def test_token_type_validation_need_():
+    jwt_data = {
+        settings.auth_jwt.token_type_field: settings.auth_jwt.refresh_token_type
+    }
+    try:
+        code.token_type_validation(jwt_data=jwt_data, need_access=False)
+        result = True
+    except JWTError as exc:
+        result = exc.msg
+    assert result
+
+
+def test_token_type_validation_need_error():
+    jwt_data = {
+        settings.auth_jwt.token_type_field: settings.auth_jwt.access_token_type
+    }
+    try:
+        code.token_type_validation(jwt_data=jwt_data, need_access=False)
+    except JWTError as exc:
+        result = exc.msg
+    assert result.startswith("Invalid token type")
+
+
+def test_token_type_validation_bad():
+    jwt_data = {
+        settings.auth_jwt.token_type_field: "__bad__"
+    }
+    try:
+        code.token_type_validation(jwt_data=jwt_data)
+    except JWTError as exc:
+        result = exc.msg
+    assert result.startswith("Invalid token type")
 
 
 def test_service_get_current_user(sample):
