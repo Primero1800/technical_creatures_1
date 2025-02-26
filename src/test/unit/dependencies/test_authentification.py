@@ -3,6 +3,7 @@ import json
 import pytest
 from fastapi import HTTPException
 
+from src.dependencies.authentification import generate_token
 from src.model.AuthJWT import TokenInfo
 from src.utils.errors import Missing
 from src.service import user as service_user
@@ -15,6 +16,7 @@ from src.test.fixtures.glob import (
 
 USER1 = mock_users[0]
 TEST_TOKENS = []
+TEST_REFRESH_TOKENS = []
 
 
 def test_clear_test_tokens():
@@ -64,7 +66,7 @@ async def test_generate_token_for_user_bad_password_mocked(mocker):
 
 
 @pytest.mark.asyncio
-async def test_generate_token_for_user(sample, test_client):
+async def test_generate_token_for_user(sample):
     result = await auth_deps.generate_token_for_user(USER1.name, USER1.hash)
     assert isinstance(result, TokenInfo)
     assert result.token_type == 'bearer'
@@ -73,7 +75,7 @@ async def test_generate_token_for_user(sample, test_client):
 
 
 @pytest.mark.asyncio
-async def test_generate_token_for_user_bad_name(sample, test_client):
+async def test_generate_token_for_user_bad_name(sample):
     try:
         result = await auth_deps.generate_token_for_user(USER1.name + "_bad", USER1.hash)
     except HTTPException as exc:
@@ -83,7 +85,7 @@ async def test_generate_token_for_user_bad_name(sample, test_client):
 
 
 @pytest.mark.asyncio
-async def test_generate_token_for_user_bad_password(sample, test_client):
+async def test_generate_token_for_user_bad_password(sample):
     try:
         result = await auth_deps.generate_token_for_user(USER1.name, USER1.hash + "_bad")
     except HTTPException as exc:
@@ -93,7 +95,26 @@ async def test_generate_token_for_user_bad_password(sample, test_client):
 
 
 @pytest.mark.asyncio
-async def test_get_token_from_request(sample, test_client, custom_request_class):
+async def test_generate_token(sample):
+    result = await generate_token(sample.name)
+    assert type(result) is TokenInfo
+    assert result.access_token is not None
+    assert result.refresh_token is None
+    TEST_TOKENS.append(result.access_token)
+
+
+@pytest.mark.asyncio
+async def test_generate_token_two_tokens(sample):
+    result = await generate_token(sample.name, access_only=False)
+    assert type(result) is TokenInfo
+    assert result.access_token is not None
+    assert result.refresh_token is not None
+    TEST_REFRESH_TOKENS.append(result.refresh_token)
+
+
+
+@pytest.mark.asyncio
+async def test_get_token_from_request(sample, custom_request_class):
     request = custom_request_class()
     request.headers = {
         "Authorization": f"Bearer {TEST_TOKENS[1]}"
@@ -106,7 +127,7 @@ async def test_get_token_from_request(sample, test_client, custom_request_class)
 
 
 @pytest.mark.asyncio
-async def test_get_token_from_request_bad_token(sample, test_client, custom_request_class):
+async def test_get_token_from_request_bad_token(sample, custom_request_class):
     request = custom_request_class()
     request.headers = {
         "Authorization": f"arer {TEST_TOKENS[0]}"
@@ -120,7 +141,7 @@ async def test_get_token_from_request_bad_token(sample, test_client, custom_requ
 
 
 @pytest.mark.asyncio
-async def test_get_token_from_request_no_token(sample, test_client, custom_request_class):
+async def test_get_token_from_request_no_token(sample, custom_request_class):
     request = custom_request_class()
     request.headers = {}
     try:
@@ -153,6 +174,43 @@ async def test_login_required_bad(sample):
     assert result.status_code == 401
     assert result.detail.startswith('Not authenticated')
 
+
+@pytest.mark.asyncio
+async def test_generate_token_for_refresh_access(sample):
+    try:
+        result = await auth_deps.generate_token_for_refresh(TEST_TOKENS[-1])
+    except Missing as exc:
+        result = exc.msg
+    except HTTPException as exc:
+        result = exc
+    assert result.status_code == 401
+    assert result.detail.startswith("Invalid token type")
+
+
+@pytest.mark.asyncio
+async def test_generate_token_for_refresh_refresh(sample):
+    try:
+        result = await auth_deps.generate_token_for_refresh(TEST_REFRESH_TOKENS[-1])
+    except Missing as exc:
+        result = exc.msg
+    except HTTPException as exc:
+        result = exc
+    assert type(result) is TokenInfo
+    assert result.token_type == 'bearer'
+    assert result.access_token is not None
+    assert result.refresh_token is None
+
+
+@pytest.mark.asyncio
+async def test_generate_token_for_refresh_bad():
+    try:
+        result = await auth_deps.generate_token_for_refresh('__bad__')
+    except Missing as exc:
+        result = exc.msg
+    except HTTPException as exc:
+        result = exc
+    assert result.status_code == 401
+    assert "Not enough segments" in result.detail
 
 
 def test_delete_user_success(test_client, sample):
