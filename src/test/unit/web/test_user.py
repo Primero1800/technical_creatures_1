@@ -13,11 +13,14 @@ import src.service.user as service
 
 
 TEST_TOKENS = []
+TEST_REFRESH_TOKENS = []
 
 
 def test_clear_test_tokens():
     TEST_TOKENS.clear()
+    TEST_REFRESH_TOKENS.clear()
     assert TEST_TOKENS == []
+    assert TEST_REFRESH_TOKENS == []
 
 
 def test_get_all_users_mocked(test_client, mocker):
@@ -83,6 +86,7 @@ def test_create_access_token(test_client, sample, oauth2data):
     response_text = json.loads(response.text)
     assert response_text['token_type'] == 'bearer'
     TEST_TOKENS.append("Bearer " + response_text['access_token'])
+    TEST_REFRESH_TOKENS.append("Bearer " + response_text['refresh_token'])
 
 
 def test_create_access_token_bad(test_client, sample, oauth2data):
@@ -129,6 +133,74 @@ def test_get_access_token_bad(test_client):
     )
     assert response.status_code == 401
     assert json.loads(response.text) == {"detail": f"Not enough segments"}
+
+
+def test_refresh_access_token(test_client):
+    response = test_client.post(
+        "/user/refresh",
+        headers={
+            "Authorization": TEST_REFRESH_TOKENS[0],
+        }
+    )
+    assert response.status_code == 200
+    assert 'access_token' in json.loads(response.text)
+
+
+def test_refresh_access_token_with_access(test_client):
+    response = test_client.post(
+        "/user/refresh",
+        headers={
+            "Authorization": TEST_TOKENS[0],
+        }
+    )
+    assert response.status_code == 401
+    assert json.loads(response.text)['detail'].startswith("Invalid token type")
+
+
+def test_refresh_access_token_bad(test_client):
+    response = test_client.post(
+        "/user/refresh",
+        headers={
+            "Authorization": TEST_TOKENS[1],
+        }
+    )
+    assert response.status_code == 401
+    assert json.loads(response.text)['detail'].startswith("Not enough segments")
+
+
+def test_get_user_info_from_any_token(test_client, sample):
+    response = test_client.get(
+        "/user/user_by_token",
+        headers={
+            "Authorization": TEST_TOKENS[0],
+        }
+    )
+    assert response.status_code == 200
+    assert json.loads(response.text)['type'] == 'access'
+    assert json.loads(response.text)['user']['name'] == sample.name
+
+
+def test_get_user_info_from_any_token_refresh(test_client, sample):
+    response = test_client.get(
+        "/user/user_by_token",
+        headers={
+            "Authorization": TEST_REFRESH_TOKENS[0],
+        }
+    )
+    assert response.status_code == 200
+    assert json.loads(response.text)['type'] == 'refresh'
+    assert json.loads(response.text)['user']['name'] == sample.name
+
+
+def test_get_user_info_from_any_token_bad(test_client, sample):
+    response = test_client.get(
+        "/user/user_by_token",
+        headers={
+            "Authorization": TEST_TOKENS[1],
+        }
+    )
+    assert response.status_code == 400
+    assert json.loads(response.text)['detail'] == 'Not enough segments'
 
 
 def test_get_one_success(test_client, sample):

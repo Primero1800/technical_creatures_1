@@ -5,7 +5,7 @@ import jwt
 import src.dependencies.authentification as auth_depends
 
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 from starlette.requests import Request
 
@@ -21,8 +21,7 @@ if os.getenv("FAKE") == str(True):
 else:
     import src.service.user as service
 
-from src.utils.errors import Missing, Duplicate, Validation
-
+from src.utils.errors import Missing, Duplicate, Validation, JWTError
 
 router = APIRouter(prefix="/user")
 
@@ -60,9 +59,38 @@ async def get_access_token(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
+@router.post(
+    "/refresh", status_code=status.HTTP_200_OK,
+    include_in_schema=False, response_model=TokenInfo,
+    response_model_exclude_none=True,
+)
+@router.post(
+    "/refresh/", status_code=status.HTTP_200_OK,
+    tags=[Tags.AUTH_TAG], response_model=TokenInfo,
+    response_model_exclude_none=True,
+)
+async def refresh_access_token(token_info: TokenInfo = Depends(auth_depends.generate_token_for_refresh)) -> TokenInfo:
+    return token_info
+
+
 @router.get("/test_jwtauth", tags=[Tags.TECH_TAG,])
 async def get_test_jwt_auth(user=Depends(auth_depends.login_required)):
     return user
+
+
+@router.get(
+    "/user_by_token", tags=[Tags.TECH_TAG,],
+    status_code=status.HTTP_200_OK,
+    description=f"Get information from token of any type",
+)
+async def get_user_info_from_any_token(token: str = Depends(oauth2_scheme)):
+    try:
+        return service.get_current_user(
+            token_cred=token,
+            need_token_type_validation=False
+        )
+    except JWTError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.msg)
 
 
 @router.get("", status_code=status.HTTP_200_OK, include_in_schema=False)
